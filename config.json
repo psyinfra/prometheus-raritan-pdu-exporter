@@ -1,0 +1,12 @@
+{
+    "pdu1_name": {
+        "instance": "https://address.to.pdu",
+        "user": "username",
+        "password": "password"
+    },
+    "pdu2_name": {
+        "instance": "https://address.to.pdu",
+        "user": "username",
+        "password": "password"
+    }
+}
