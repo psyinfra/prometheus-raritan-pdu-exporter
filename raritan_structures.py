@@ -63,6 +63,7 @@ class PDU(object):
 
     def get_sources(self):
         """request all sources (connectors and their sensors) from the PDU"""
+        n_inlets, n_outlets, n_devices, n_sensors = (0, 0, 0, 0)
         requests = {'requests': [
             {'rid': self.uri_pdu, 
              'json': Request('getInlets', request_id='inlet')},
@@ -108,12 +109,22 @@ class PDU(object):
             connector = self.connectors[resp['json']['id']]
             ret = resp['json']['result']['_ret_']
 
-            if connector.type is 'device':  # one sensor only
+            if connector.type == 'device':  # one sensor only
+                if ret is None: # unused device slots return None
+                    continue
+
                 rid = ret['value']['device']['rid']
                 type_ = ret['value']['device']['type']
                 self.sensors.append(Sensor(rid, type_, connector))
+                n_devices += 1
+                n_sensors += 1
 
             elif connector.type in ['inlet', 'outlet']:  # multiple sensors
+                if connector.type == 'inlet':
+                    n_inlets += 1
+                elif connector.type == 'outlet':
+                    n_outlets += 1
+
                 for metric, data in ret.items():
                     if data is None:  # unused sensors return None
                         continue
@@ -121,6 +132,7 @@ class PDU(object):
                     rid = data['rid']
                     type_ = data['type']
                     self.sensors.append(Sensor(rid, type_, connector, metric))
+                    n_sensors += 1
 
         requests = {'requests': [
             {'rid': s.rid, 'json': Request('getMetaData', request_id=i)}
@@ -134,11 +146,15 @@ class PDU(object):
             sensor = self.sensors[resp['json']['id']]
             sensor.update(**resp['json']['result']['_ret_'])
 
-        logger.info('(%s) %s connectors and %s sensors found' % (self.name,
-            len(self.connectors), len(self.sensors)))
+        logger.info('(%s) %s inlet(s), %s outlet(s), and %s device(s) with ' \
+            'a total of %s sensor(s) found' % (self.name, n_inlets, n_outlets,
+            n_devices, n_sensors))
 
     def read_sensors(self):
         """Bulk request to read all sensors"""
+        for sensor in self.sensors:
+            sensor.set_value(None, None)
+
         requests = {'requests': []}
         for sensor_id, sensor in enumerate(self.sensors):
             if sensor.interface in SENSORS_NUMERIC:
@@ -162,11 +178,6 @@ class PDU(object):
             value = resp['json']['result']['_ret_']['value']
             timestamp = resp['json']['result']['_ret_']['timestamp']
             sensor.set_value(value, timestamp)
-
-    def clear_sensor_values(self):
-        """Clear the readings of all the sensors"""
-        for sensor in self.sensors:
-            sensor.set_value(None, None)
 
 
 class Connector(object):

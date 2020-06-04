@@ -22,7 +22,7 @@ logger = logging.getLogger('raritan_exporter')
 logger.setLevel(level=logging.DEBUG)
 
 # Measure collection time
-COLLECTION_TIME = Summary('raritan_collector_collect_seconds',
+REQUEST_TIME = Summary('raritan_collector_collect_seconds',
     'Time spent to collect metrics from the Raritan PDU')
 
 def parse_args():
@@ -101,7 +101,6 @@ class MultiRaritanExporter:
     def __init__(self, config: str,
                  threading: Optional[bool] = True,
                  insecure: Optional[bool] = True):
-        self.counter = 0
         self.threading = threading
         self.pdus = self.get_pdus(config, insecure)
 
@@ -163,14 +162,10 @@ class MultiRaritanExporter:
 
         return metrics
 
+    @REQUEST_TIME.time()
     def collect(self):
         """Collect sensor readings, called every time the http server 
         containing the Raritan PDU metrics is requested"""
-        start = time.time()
-
-        for pdu in self.pdus:
-            pdu.clear_sensor_values()
-
         metrics = self.get_reading()
         labels = ['instance', 'label', 'type']
 
@@ -214,18 +209,6 @@ class MultiRaritanExporter:
                 continue
 
             yield g
-
-        duration = time.time() - start
-        COLLECTION_TIME.observe(duration)
-
-        if self.counter < 1:
-            logger.debug('initial collection of sensor readings in %ss'
-                % round(duration, 2))
-        else:
-            logger.debug('collected sensor readings #%s in %ss' 
-                % (self.counter, round(duration, 2))) 
-
-        self.counter += 1
 
 
 if __name__ == '__main__':
