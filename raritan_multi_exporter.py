@@ -27,8 +27,7 @@ REQUEST_TIME = Summary('raritan_collector_collect_seconds',
 
 def parse_args():
     parser = argparse.ArgumentParser(
-        description='raritan exporter args config file, port, threading, and' \
-            'insecure'
+        description='Python-based Raritan PDU exporter for prometheus.io'
     )
     parser.add_argument(
         '-c', '--config',
