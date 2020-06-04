@@ -67,7 +67,7 @@ def main():
         port = int(args.port)
         REGISTRY.register(MultiRaritanExporter(args.config, args.threading, 
             args.insecure))
-        logger.info('serving at port %s' % port)
+        logger.info('listening on :%s' % port)
         start_http_server(port)
 
         while True:
