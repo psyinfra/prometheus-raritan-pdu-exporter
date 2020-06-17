@@ -54,7 +54,7 @@ port.
 
 ## Installation
 
-    git clone git@jugit.fz-juelich.de/inm7/infrastructure/raritan_exporter.git
+    git clone git@jugit.fz-juelich.de:inm7/infrastructure/raritan_exporter.git
     cd raritan_exporter
     pip install -r requirements.txt
 
