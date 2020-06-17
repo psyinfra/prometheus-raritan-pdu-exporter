@@ -166,7 +166,7 @@ class MultiRaritanExporter:
         """Collect sensor readings, called every time the http server 
         containing the Raritan PDU metrics is requested"""
         metrics = self.get_reading()
-        labels = ['instance', 'label', 'type']
+        labels = ['pdu', 'label', 'type']
 
         # Expose all metrics
         for metric in metrics:
