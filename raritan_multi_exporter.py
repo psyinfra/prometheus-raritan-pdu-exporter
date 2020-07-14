@@ -180,9 +180,14 @@ class MultiRaritanExporter:
                     if sensor.value is None:
                         continue
 
+                    if sensor.parent.custom_label:
+                        label = sensor.parent.custom_label
+                    else:
+                        label = sensor.parent.label
+
                     g.add_metric(
                         [sensor.parent.parent.location, 
-                         sensor.parent.label,
+                         label,
                          sensor.parent.type],
                         sensor.value
                     )
@@ -197,9 +202,14 @@ class MultiRaritanExporter:
                     if sensor.value is None:
                         continue
 
+                    if sensor.parent.custom_label:
+                        label = sensor.parent.custom_label
+                    else:
+                        label = sensor.parent.label
+
                     g.add_metric(
                         [sensor.parent.parent.location, 
-                         sensor.parent.label,
+                         label,
                          sensor.parent.type],
                         sensor.value
                     )

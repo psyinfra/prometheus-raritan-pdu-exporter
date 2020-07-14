@@ -63,6 +63,7 @@ class PDU(object):
 
     def get_sources(self):
         """request all sources (connectors and their sensors) from the PDU"""
+        # Get connector RIDs
         n_inlets, n_outlets, n_devices, n_sensors = (0, 0, 0, 0)
         requests = {'requests': [
             {'rid': self.uri_pdu, 
@@ -79,6 +80,8 @@ class PDU(object):
             for resp in responses
             for ret in resp['json']['result']['_ret_']
         ]
+
+        # Get connector metadata
         requests = {'requests': [
             {'rid': c.rid, 'json': Request('getMetaData', request_id=i)}
             for i, c in enumerate(self.connectors)
@@ -89,8 +92,24 @@ class PDU(object):
 
         for resp in responses:
             connector = self.connectors[resp['json']['id']]
-            connector.update(**resp['json']['result']['_ret_'])
+            connector.update('metadata', **resp['json']['result']['_ret_'])
 
+        # TODO: add update parameter 'method' for  metadata and settings
+
+        # Get connector settings
+        requests = {'requests': [
+            {'rid': c.rid, 'json': Request('getSettings', request_id=i)}
+            for i, c in enumerate(self.connectors)
+            if c.type != 'device'  # devices have no settings
+        ]}
+        response = self.client.send(Request('performBulk', **requests))
+        responses = response.data.result['responses']
+
+        for resp in responses:
+            connector = self.connectors[resp['json']['id']]
+            connector.update('settings', **resp['json']['result']['_ret_'])
+
+        # Get sensors per connector
         requests = {'requests': []}
         for i, c in enumerate(self.connectors):
             if c.type == 'inlet' or c.type == 'outlet':
@@ -134,6 +153,7 @@ class PDU(object):
                     self.sensors.append(Sensor(rid, type_, connector, metric))
                     n_sensors += 1
 
+        # Get sensor metadata
         requests = {'requests': [
             {'rid': s.rid, 'json': Request('getMetaData', request_id=i)}
             for i, s in enumerate(self.sensors)
@@ -199,17 +219,23 @@ class Connector(object):
         self.type = type_
         self.parent = parent
         self.socket = None  # plug or receptacle
-        self.label = rid.rsplit('/', 1)[-1].rsplit('.', 1)[-1]
+        self.label = int(rid.rsplit('/', 1)[-1].rsplit('.', 1)[-1])+1
+        self.custom_label = None
 
-    def update(self, **kwargs: dict):
+    def update(self, method: str, **kwargs: dict):
         """update the connector object with meta data"""
-        if kwargs.get('label', None):
-            self.label = kwargs['label']
+        if method == 'metadata':
+            if kwargs.get('label', None):
+                self.label = kwargs['label']
 
-        if self.type == 'outlet':
-            self.socket = kwargs.get('receptacleType', None)
-        elif self.type == 'inlet':
-            self.socket = kwargs.get('plugType', None)
+            if self.type == 'outlet':
+                self.socket = kwargs.get('receptacleType', None)
+            elif self.type == 'inlet':
+                self.socket = kwargs.get('plugType', None)
+
+        elif method == 'settings':
+            if kwargs.get('name', None):
+                self.custom_label = kwargs['name']
 
 
 class Sensor(object):
