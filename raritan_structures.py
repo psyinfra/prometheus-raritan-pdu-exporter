@@ -219,7 +219,7 @@ class Connector(object):
         self.type = type_
         self.parent = parent
         self.socket = None  # plug or receptacle
-        self.label = int(rid.rsplit('/', 1)[-1].rsplit('.', 1)[-1])+1
+        self.label = rid.rsplit('/', 1)[-1]
         self.custom_label = None
 
     def update(self, method: str, **kwargs: dict):
