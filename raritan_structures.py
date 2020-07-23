@@ -100,7 +100,6 @@ class PDU(object):
         requests = {'requests': [
             {'rid': c.rid, 'json': Request('getSettings', request_id=i)}
             for i, c in enumerate(self.connectors)
-            if c.type != 'device'  # devices have no settings
         ]}
         response = self.client.send(Request('performBulk', **requests))
         responses = response.data.result['responses']
