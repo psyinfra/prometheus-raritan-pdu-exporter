@@ -1,9 +1,9 @@
-from raritan_globals import (SENSORS_NUMERIC, SENSORS_STATE, SENSORS_TYPES,
-    SENSORS_UNITS)
+from modules.globals import (SENSORS_NUMERIC, SENSORS_STATE, SENSORS_TYPES,
+                             SENSORS_UNITS)
 from jsonrpcclient.clients.http_client import HTTPClient
 from jsonrpcclient.requests import Request
 from urllib.parse import urljoin, urlparse
-from typing import Optional, List
+from typing import Optional
 import logging
 import re
 

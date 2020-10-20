@@ -1,13 +1,15 @@
-from raritan_structures import PDU, Connector, Sensor, Metric
-from raritan_globals import RARITAN_GAUGES, RARITAN_COUNTERS
-from prometheus_client import (start_http_server, Gauge, Counter, REGISTRY,
-    Summary)
-from prometheus_client.core import GaugeMetricFamily, CounterMetricFamily
 from typing import Optional, List
 import argparse
 import urllib3
 import logging
 import time
+
+from prometheus_client import (start_http_server, REGISTRY, Summary)
+from prometheus_client.core import GaugeMetricFamily, CounterMetricFamily
+
+from raritan.structures import PDU, Metric
+from raritan.globals import RARITAN_GAUGES, RARITAN_COUNTERS
+
 
 # Raritan PDU has no SSL certificate, ignore the ensuing warning
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
@@ -20,8 +22,9 @@ logger = logging.getLogger('raritan_exporter')
 logger.setLevel(level=logging.DEBUG)
 
 # Measure collection time
-REQUEST_TIME = Summary('raritan_collector_collect_seconds', 
-    'Time spent to collect metrics from the Raritan PDU')
+REQUEST_TIME = Summary('raritan_collector_collect_seconds',
+                       'Time spent to collect metrics from the Raritan PDU')
+
 
 def parse_args():
     parser = argparse.ArgumentParser(
@@ -70,13 +73,15 @@ def main():
     try:
         args = parse_args()
         port = int(args.port)
-        REGISTRY.register(RaritanExporter(args.address, (args.user, 
-            args.password), args.insecure))
+        REGISTRY.register(RaritanExporter(
+            args.address, (args.user, args.password), args.insecure)
+        )
         logger.info('listening on :%s' % port)
         start_http_server(port)
 
         while True:
             time.sleep(1)
+
     except KeyboardInterrupt:
         logger.info('interrupted by user')
         exit(0)
@@ -98,7 +103,7 @@ class RaritanExporter:
     """
     def __init__(self, instance: str, 
                  auth: Optional[tuple] = (), insecure: Optional[bool] = False):
-        self.pdu = PDU(instance, auth = auth, insecure = insecure)
+        self.pdu = PDU(instance, auth=auth, insecure=insecure)
         self.pdu.get_sources()
 
     def get_reading(self) -> List[Metric]:

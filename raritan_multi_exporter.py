@@ -1,7 +1,7 @@
-from raritan_structures import PDU, Connector, Sensor, Metric
-from raritan_globals import RARITAN_GAUGES, RARITAN_COUNTERS
-from prometheus_client import (start_http_server, Gauge, Counter, REGISTRY,
-    Summary)
+from raritan.structures import PDU, Metric
+from raritan.globals import RARITAN_GAUGES, RARITAN_COUNTERS
+from prometheus_client import (start_http_server, REGISTRY,
+                               Summary)
 from prometheus_client.core import GaugeMetricFamily, CounterMetricFamily
 from typing import Optional, List
 from threading import Thread
@@ -23,7 +23,8 @@ logger.setLevel(level=logging.DEBUG)
 
 # Measure collection time
 REQUEST_TIME = Summary('raritan_collector_collect_seconds',
-    'Time spent to collect metrics from the Raritan PDU')
+                       'Time spent to collect metrics from the Raritan PDU')
+
 
 def parse_args():
     parser = argparse.ArgumentParser(
@@ -61,17 +62,20 @@ def parse_args():
     )
     return parser.parse_args()
 
+
 def main():
     try:
         args = parse_args()
         port = int(args.port)
-        REGISTRY.register(MultiRaritanExporter(args.config, args.threading, 
-            args.insecure))
+        REGISTRY.register(
+            MultiRaritanExporter(args.config, args.threading, args.insecure)
+        )
         logger.info('listening on :%s' % port)
         start_http_server(port)
 
         while True:
             time.sleep(1)
+
     except KeyboardInterrupt:
         logger.info('interrupted by user')
         exit(0)
