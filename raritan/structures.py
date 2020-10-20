@@ -1,14 +1,18 @@
-from modules.globals import (SENSORS_NUMERIC, SENSORS_STATE, SENSORS_TYPES,
-                             SENSORS_UNITS)
-from jsonrpcclient.clients.http_client import HTTPClient
-from jsonrpcclient.requests import Request
-from urllib.parse import urljoin, urlparse
 from typing import Optional
+from urllib.parse import urljoin, urlparse
 import logging
 import re
+import time
+
+from jsonrpcclient.clients.http_client import HTTPClient
+from jsonrpcclient.requests import Request
+
+from raritan.globals import (SENSORS_NUMERIC, SENSORS_STATE, SENSORS_TYPES,
+                             SENSORS_UNITS)
 
 # Internal logging
 logger = logging.getLogger('raritan_exporter')
+
 
 def camel_to_snake(label: str) -> str:
     """Convert camelCase strings to snake_case"""
@@ -44,17 +48,19 @@ class PDU(object):
         self.name = name if name is not None else self.location
         self.uri_pdu = '/model/pdu/0'
         self.uri_device = '/model/peripheraldevicemanager'
-        self.client = self._http_client(endpoint = urljoin(location, '/bulk'), 
-                auth = auth, verify = not insecure)
+        self.client = self._http_client(
+            endpoint=urljoin(location, '/bulk'),
+            auth=auth,
+            verify=not insecure
+        )
         self.connectors = []
         self.sensors = []
 
     def _http_client(self, endpoint: str,
-                    auth: Optional[tuple] = (),
-                    verify: Optional[bool] = False) -> HTTPClient:
+                     auth: Optional[tuple] = (),
+                     verify: Optional[bool] = False) -> HTTPClient:
         """Set up an HTTP client for json-rpc requests"""
-        logger.info('(%s) polling at %s' % (self.name,
-            endpoint))
+        logger.info('(%s) polling at %s' % (self.name, endpoint))
         client = HTTPClient(endpoint)
         client.session.auth = auth
         client.session.verify = verify
@@ -65,14 +71,18 @@ class PDU(object):
         """request all sources (connectors and their sensors) from the PDU"""
         # Get connector RIDs
         n_inlets, n_outlets, n_devices, n_sensors = (0, 0, 0, 0)
-        requests = {'requests': [
-            {'rid': self.uri_pdu, 
-             'json': Request('getInlets', request_id='inlet')},
-            {'rid': self.uri_pdu, 
-             'json': Request('getOutlets', request_id='outlet')},
-            {'rid': self.uri_device, 
-             'json': Request('getDeviceSlots', request_id='device')},
-        ]}
+        requests = {
+            'requests': [{
+                'rid': self.uri_pdu,
+                'json': Request('getInlets', request_id='inlet')
+            }, {
+                'rid': self.uri_pdu,
+                'json': Request('getOutlets', request_id='outlet')
+            }, {
+                'rid': self.uri_device,
+                'json': Request('getDeviceSlots', request_id='device')
+            }]
+        }
         response = self.client.send(Request('performBulk', **requests))
         responses = response.data.result['responses']
         self.connectors = [
@@ -94,8 +104,6 @@ class PDU(object):
             connector = self.connectors[resp['json']['id']]
             connector.update('metadata', **resp['json']['result']['_ret_'])
 
-        # TODO: add update parameter 'method' for  metadata and settings
-
         # Get connector settings
         requests = {'requests': [
             {'rid': c.rid, 'json': Request('getSettings', request_id=i)}
@@ -115,6 +123,8 @@ class PDU(object):
                 method = 'getSensors'
             elif c.type == 'device':
                 method = 'getDevice'
+            else:
+                raise ValueError('Unrecognized type %s' % c.type)
 
             requests['requests'].append(
                 {'rid': c.rid, 'json': Request(method, request_id=i)}
@@ -128,7 +138,7 @@ class PDU(object):
             ret = resp['json']['result']['_ret_']
 
             if connector.type == 'device':  # one sensor only
-                if ret is None: # unused device slots return None
+                if ret is None:  # unused device slots return None
                     continue
 
                 rid = ret['value']['device']['rid']
@@ -165,9 +175,15 @@ class PDU(object):
             sensor = self.sensors[resp['json']['id']]
             sensor.update(**resp['json']['result']['_ret_'])
 
-        logger.info('(%s) %s inlet(s), %s outlet(s), and %s device(s) with ' \
-            'a total of %s sensor(s) found' % (self.name, n_inlets, n_outlets,
-            n_devices, n_sensors))
+        logger.info(
+            '(%s) %s inlet(s), %s outlet(s), and %s device(s) with '
+            'a total of %s sensor(s) found'
+            % (self.name, n_inlets, n_outlets, n_devices, n_sensors)
+        )
+
+    def clear_sensors(self):
+        for sensor in self.sensors:
+            sensor.set_value(None, timestamp=time.time())
 
     def read_sensors(self):
         """Bulk request to read all sensors"""
@@ -188,15 +204,19 @@ class PDU(object):
                 'json': Request(method, request_id=sensor_id)
             })
 
-        response = self.client.send(Request('performBulk', **requests))
-        responses = response.data.result['responses']
-
-        for resp in responses:
-            sensor_id = resp['json']['id']
-            sensor = self.sensors[int(sensor_id)]
-            value = resp['json']['result']['_ret_']['value']
-            timestamp = resp['json']['result']['_ret_']['timestamp']
-            sensor.set_value(value, timestamp)
+        try:
+            response = self.client.send(Request('performBulk', **requests))
+            responses = response.data.result['responses']
+        except ConnectionError as exc:
+            logger.error(exc)
+            self.clear_sensors()  # return None if request failed
+        else:
+            for resp in responses:
+                sensor_id = resp['json']['id']
+                sensor = self.sensors[int(sensor_id)]
+                value = resp['json']['result']['_ret_']['value']
+                timestamp = resp['json']['result']['_ret_']['timestamp']
+                sensor.set_value(value, timestamp)
 
 
 class Connector(object):
@@ -288,7 +308,7 @@ class Sensor(object):
 
         if self.unit not in (None, 'none'):
             self.longname = '%s_in_%s' % (self.longname,
-                camel_to_snake(self.unit))
+                                          camel_to_snake(self.unit))
 
     def set_value(self, 
                   value: Optional[float] = None, 
