@@ -44,8 +44,8 @@ class PDU(object):
     """
     def __init__(self, location: str, name: Optional[str] = None,
                  auth: Optional[tuple] = (), insecure: Optional[bool] = True):
-        self.location = urlparse(location).netloc
-        self.name = name if name is not None else self.location
+        self.location = location
+        self.name = name if name is not None else urlparse(location).netloc
         self.uri_pdu = '/model/pdu/0'
         self.uri_device = '/model/peripheraldevicemanager'
         self.client = self._http_client(
@@ -353,4 +353,3 @@ class Metric(object):
             self.name = sensor.longname
 
         self.sensors.append(sensor)
-
