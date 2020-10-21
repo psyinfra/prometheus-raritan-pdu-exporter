@@ -17,7 +17,7 @@ def test_pdu_object():
     location = 'http://127.0.0.1:30000'
     pdu = struct.PDU(location, insecure=True)
 
-    assert pdu.location == location
+    assert pdu.location == '127.0.0.1:30000'
     assert pdu.client.endpoint == f'{location}/bulk'
     assert not pdu.client.verify
 
