@@ -1,7 +1,5 @@
 import time
 
-from pytest import fixture, raises as praises
-
 from raritan import structures as struct
 from raritan.globals import SENSORS_NUMERIC, SENSORS_TYPES, SENSORS_UNITS
 
