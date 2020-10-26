@@ -6,6 +6,7 @@ import time
 
 from jsonrpcclient.clients.http_client import HTTPClient
 from jsonrpcclient.requests import Request
+import requests
 
 from raritan.globals import (SENSORS_NUMERIC, SENSORS_STATE, SENSORS_TYPES,
                              SENSORS_UNITS)
@@ -71,7 +72,7 @@ class PDU(object):
         """request all sources (connectors and their sensors) from the PDU"""
         # Get connector RIDs
         n_inlets, n_outlets, n_devices, n_sensors = (0, 0, 0, 0)
-        requests = {
+        query = {
             'requests': [{
                 'rid': self.uri_pdu,
                 'json': Request('getInlets', request_id='inlet')
@@ -83,7 +84,7 @@ class PDU(object):
                 'json': Request('getDeviceSlots', request_id='device')
             }]
         }
-        response = self.client.send(Request('performBulk', **requests))
+        response = self.client.send(Request('performBulk', **query))
         responses = response.data.result['responses']
         self.connectors = [
             Connector(rid=ret['rid'], type_=resp['json']['id'], parent=self)
@@ -92,12 +93,12 @@ class PDU(object):
         ]
 
         # Get connector metadata
-        requests = {'requests': [
+        query = {'requests': [
             {'rid': c.rid, 'json': Request('getMetaData', request_id=i)}
             for i, c in enumerate(self.connectors)
             if c.type != 'device'  # devices have no metadata
         ]}
-        response = self.client.send(Request('performBulk', **requests))
+        response = self.client.send(Request('performBulk', **query))
         responses = response.data.result['responses']
 
         for resp in responses:
@@ -105,11 +106,11 @@ class PDU(object):
             connector.update('metadata', **resp['json']['result']['_ret_'])
 
         # Get connector settings
-        requests = {'requests': [
+        query = {'requests': [
             {'rid': c.rid, 'json': Request('getSettings', request_id=i)}
             for i, c in enumerate(self.connectors)
         ]}
-        response = self.client.send(Request('performBulk', **requests))
+        response = self.client.send(Request('performBulk', **query))
         responses = response.data.result['responses']
 
         for resp in responses:
@@ -117,7 +118,7 @@ class PDU(object):
             connector.update('settings', **resp['json']['result']['_ret_'])
 
         # Get sensors per connector
-        requests = {'requests': []}
+        query = {'requests': []}
         for i, c in enumerate(self.connectors):
             if c.type == 'inlet' or c.type == 'outlet':
                 method = 'getSensors'
@@ -126,11 +127,11 @@ class PDU(object):
             else:
                 raise ValueError('Unrecognized type %s' % c.type)
 
-            requests['requests'].append(
+            query['requests'].append(
                 {'rid': c.rid, 'json': Request(method, request_id=i)}
             )
 
-        response = self.client.send(Request('performBulk', **requests))
+        response = self.client.send(Request('performBulk', **query))
         responses = response.data.result['responses']
 
         for resp in responses:
@@ -163,12 +164,12 @@ class PDU(object):
                     n_sensors += 1
 
         # Get sensor metadata
-        requests = {'requests': [
+        query = {'requests': [
             {'rid': s.rid, 'json': Request('getMetaData', request_id=i)}
             for i, s in enumerate(self.sensors)
             if s.interface not in SENSORS_STATE  # these have no metadata
         ]}
-        response = self.client.send(Request('performBulk', **requests))
+        response = self.client.send(Request('performBulk', **query))
         responses = response.data.result['responses']
 
         for resp in responses:
@@ -190,7 +191,7 @@ class PDU(object):
         for sensor in self.sensors:
             sensor.set_value(None, None)
 
-        requests = {'requests': []}
+        query = {'requests': []}
         for sensor_id, sensor in enumerate(self.sensors):
             if sensor.interface in SENSORS_NUMERIC:
                 method = 'getReading'
@@ -199,17 +200,35 @@ class PDU(object):
             else:
                 continue  # unlisted interface
 
-            requests['requests'].append({
+            query['requests'].append({
                 'rid': sensor.rid,
                 'json': Request(method, request_id=sensor_id)
             })
 
         try:
-            response = self.client.send(Request('performBulk', **requests))
+            response = self.client.send(Request('performBulk', **query))
             responses = response.data.result['responses']
-        except ConnectionError as exc:
+        except requests.exceptions.ConnectionError as exc:
+            logger.warning('(%s) Connection error' % self.name)
             logger.error(exc)
             self.clear_sensors()  # return None if request failed
+        except requests.exceptions.Timeout as exc:
+            logger.warning('(%s) Connection timed out' % self.name)
+            logger.error(exc)
+            self.clear_sensors()
+        except requests.exceptions.TooManyRedirects as exc:
+            logger.warning('(%s) Too many redirects' % self.name)
+            logger.error(exc)
+            self.clear_sensors()
+        except requests.exceptions.RequestException as exc:
+            logger.warning('(%s) Unknown error occurred' % self.name)
+            logger.error(exc)
+            self.clear_sensors()
+        except Exception as exc:
+            # TODO: Remove this clause once the error has been defined
+            logger.error('(%s) Failed error handling' % self.name)
+            logger.error(exc)
+            self.clear_sensors()
         else:
             for resp in responses:
                 sensor_id = resp['json']['id']
