@@ -15,14 +15,13 @@ import json
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 # External (root level) logging level
-logging.basicConfig(level=logging.WARNING)
+logging.basicConfig(
+    level=logging.WARNING,
+    format='[%(asctime)s] %(levelname)s: %(message)s'
+)
 
 # Internal logging level
 logger = logging.getLogger('raritan_exporter')
-handler = logging.StreamHandler()
-formatter = logging.Formatter('[%(asctime)s] %(levelname)s: %(message)s')
-handler.setFormatter(formatter)
-logger.addHandler(handler)
 logger.setLevel(level=logging.DEBUG)
 
 # Measure collection time
