@@ -19,6 +19,10 @@ logging.basicConfig(level=logging.WARNING)
 
 # Internal logging level
 logger = logging.getLogger('raritan_exporter')
+handler = logging.StreamHandler()
+formatter = logging.Formatter('[%(asctime)s] %(levelname)s: %(message)s')
+handler.setFormatter(formatter)
+logger.addHandler(handler)
 logger.setLevel(level=logging.DEBUG)
 
 # Measure collection time

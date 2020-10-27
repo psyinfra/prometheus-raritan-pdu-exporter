@@ -6,6 +6,8 @@ import time
 
 from jsonrpcclient.clients.http_client import HTTPClient
 from jsonrpcclient.requests import Request
+from requests.adapters import HTTPAdapter
+from requests.packages.urllib3.util.retry import Retry
 import requests
 
 from raritan.globals import (SENSORS_NUMERIC, SENSORS_STATE, SENSORS_TYPES,
@@ -66,7 +68,17 @@ class PDU(object):
         client.session.auth = auth
         client.session.verify = verify
         client.session.headers.update({"Content-Type": "application/json-rpc"})
+
+        # Set maximum number of retries to 1, to prevent pool overflows
+        retry = Retry(connect=1)
+        adapter = HTTPAdapter(max_retries=retry)
+        client.session.mount('http://', adapter)
+        client.session.mount('https://', adapter)
+
         return client
+
+    def send(self, request: Request, **kwargs):
+        return self.client.send(request, timeout=10, **kwargs)
 
     def get_sources(self):
         """request all sources (connectors and their sensors) from the PDU"""
@@ -84,7 +96,7 @@ class PDU(object):
                 'json': Request('getDeviceSlots', request_id='device')
             }]
         }
-        response = self.client.send(Request('performBulk', **query))
+        response = self.send(Request('performBulk', **query))
         responses = response.data.result['responses']
         self.connectors = [
             Connector(rid=ret['rid'], type_=resp['json']['id'], parent=self)
@@ -98,7 +110,7 @@ class PDU(object):
             for i, c in enumerate(self.connectors)
             if c.type != 'device'  # devices have no metadata
         ]}
-        response = self.client.send(Request('performBulk', **query))
+        response = self.send(Request('performBulk', **query))
         responses = response.data.result['responses']
 
         for resp in responses:
@@ -110,7 +122,7 @@ class PDU(object):
             {'rid': c.rid, 'json': Request('getSettings', request_id=i)}
             for i, c in enumerate(self.connectors)
         ]}
-        response = self.client.send(Request('performBulk', **query))
+        response = self.send(Request('performBulk', **query))
         responses = response.data.result['responses']
 
         for resp in responses:
@@ -131,7 +143,7 @@ class PDU(object):
                 {'rid': c.rid, 'json': Request(method, request_id=i)}
             )
 
-        response = self.client.send(Request('performBulk', **query))
+        response = self.send(Request('performBulk', **query))
         responses = response.data.result['responses']
 
         for resp in responses:
@@ -169,7 +181,7 @@ class PDU(object):
             for i, s in enumerate(self.sensors)
             if s.interface not in SENSORS_STATE  # these have no metadata
         ]}
-        response = self.client.send(Request('performBulk', **query))
+        response = self.send(Request('performBulk', **query))
         responses = response.data.result['responses']
 
         for resp in responses:
@@ -206,28 +218,23 @@ class PDU(object):
             })
 
         try:
-            response = self.client.send(Request('performBulk', **query))
+            response = self.send(Request('performBulk', **query))
             responses = response.data.result['responses']
         except requests.exceptions.ConnectionError as exc:
             logger.warning('(%s) Connection error' % self.name)
-            logger.error(exc)
+            logger.debug(exc)
             self.clear_sensors()  # return None if request failed
         except requests.exceptions.Timeout as exc:
             logger.warning('(%s) Connection timed out' % self.name)
-            logger.error(exc)
+            logger.debug(exc)
             self.clear_sensors()
         except requests.exceptions.TooManyRedirects as exc:
             logger.warning('(%s) Too many redirects' % self.name)
-            logger.error(exc)
+            logger.debug(exc)
             self.clear_sensors()
         except requests.exceptions.RequestException as exc:
             logger.warning('(%s) Unknown error occurred' % self.name)
-            logger.error(exc)
-            self.clear_sensors()
-        except Exception as exc:
-            # TODO: Remove this clause once the error has been defined
-            logger.error('(%s) Failed error handling' % self.name)
-            logger.error(exc)
+            logger.debug(exc)
             self.clear_sensors()
         else:
             for resp in responses:
