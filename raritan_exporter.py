@@ -15,7 +15,10 @@ from raritan.globals import RARITAN_GAUGES, RARITAN_COUNTERS
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 # External (root level) logging level
-logging.basicConfig(level=logging.WARNING)
+logging.basicConfig(
+    level=logging.WARNING,
+    format='[%(asctime)s] %(levelname)s: %(message)s'
+)
 
 # Internal logging level
 logger = logging.getLogger('raritan_exporter')
@@ -81,6 +84,9 @@ def main():
 
         while True:
             time.sleep(1)
+
+    except BrokenPipeError as exc:
+        logger.error(exc)
 
     except KeyboardInterrupt:
         logger.info('interrupted by user')

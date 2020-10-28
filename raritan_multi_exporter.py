@@ -79,6 +79,9 @@ def main():
         while True:
             time.sleep(1)
 
+    except BrokenPipeError as exc:
+        logger.error(exc)
+
     except KeyboardInterrupt:
         logger.info('interrupted by user')
         exit(0)
