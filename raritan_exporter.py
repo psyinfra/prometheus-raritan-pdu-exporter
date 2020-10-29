@@ -135,7 +135,7 @@ class RaritanExporter:
         """Collect sensor readings, called every time the http server 
         containing the Raritan PDU metrics is requested"""
         metrics = self.get_reading()
-        labels = ['pdu', 'label', 'type']
+        labels = ['pdu', 'label', 'type', 'connector_id']
 
         # Expose all metrics
         for metric in metrics:
@@ -157,7 +157,8 @@ class RaritanExporter:
                     g.add_metric(
                         [sensor.parent.parent.location, 
                          label,
-                         sensor.parent.type],
+                         sensor.parent.type,
+                         sensor.parent.label],
                         sensor.value
                     )
 
@@ -179,7 +180,8 @@ class RaritanExporter:
                     g.add_metric(
                         [sensor.parent.parent.location, 
                          label,
-                         sensor.parent.type],
+                         sensor.parent.type,
+                         sensor.parent.label],
                         sensor.value
                     )
 

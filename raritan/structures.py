@@ -236,6 +236,10 @@ class PDU(object):
             logger.warning('(%s) Unknown error occurred' % self.name)
             logger.debug(exc)
             self.clear_sensors()
+        except Exception as exc:
+            logger.warning('(%s) Unknown error occurred' % self.name)
+            logger.debug(exc)
+            self.clear_sensors()
         else:
             for resp in responses:
                 sensor_id = resp['json']['id']
