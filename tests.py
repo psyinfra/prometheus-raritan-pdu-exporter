@@ -1,14 +1,15 @@
 import time
 
 from raritan import structures as struct
+from raritan.utils import camel_to_snake
 from raritan.globals import SENSORS_NUMERIC, SENSORS_TYPES, SENSORS_UNITS
 
 
 def test_camel_to_snake():
-    assert struct.camel_to_snake('fooBarBaz') == 'foo_bar_baz'
-    assert struct.camel_to_snake('foobarbaz') == 'foobarbaz'
-    assert struct.camel_to_snake('foo_barBaz') == 'foo_bar_baz'
-    assert struct.camel_to_snake('Foobarbaz') == 'foobarbaz'
+    assert camel_to_snake('fooBarBaz') == 'foo_bar_baz'
+    assert camel_to_snake('foobarbaz') == 'foobarbaz'
+    assert camel_to_snake('foo_barBaz') == 'foo_bar_baz'
+    assert camel_to_snake('Foobarbaz') == 'foobarbaz'
 
 
 def test_pdu_object():
