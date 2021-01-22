@@ -4,7 +4,7 @@ import urllib3
 import logging
 import time
 
-from prometheus_client import (start_http_server, REGISTRY, Summary)
+from prometheus_client import (start_http_server, REGISTRY)
 from raritan.exporter import RaritanMultiExporter
 
 # Raritan PDU has no SSL certificate, ignore the ensuing warning
@@ -19,10 +19,6 @@ logging.basicConfig(
 # Internal logging level
 logger = logging.getLogger('raritan_exporter')
 logger.setLevel(level=logging.DEBUG)
-
-# Measure collection time
-REQUEST_TIME = Summary('raritan_collector_collect_seconds',
-                       'Time spent to collect metrics from the Raritan PDU')
 
 
 def parse_args():
