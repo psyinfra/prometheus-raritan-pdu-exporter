@@ -1,7 +1,6 @@
 from typing import Optional
 from urllib.parse import urljoin, urlparse
 import logging
-import re
 import time
 
 from jsonrpcclient.clients.http_client import HTTPClient
@@ -12,16 +11,10 @@ import requests
 
 from raritan.globals import (SENSORS_NUMERIC, SENSORS_STATE, SENSORS_TYPES,
                              SENSORS_UNITS)
+from raritan.utils import camel_to_snake
 
 # Internal logging
 logger = logging.getLogger('raritan_exporter')
-
-
-def camel_to_snake(label: str) -> str:
-    """Convert camelCase strings to snake_case"""
-    label = re.sub('(.)([A-Z][a-z]+)', r'\1_\2', label)
-    label = re.sub('([a-z0-9])([A-Z])', r'\1_\2', label).lower()
-    return label
 
 
 class PDU(object):
@@ -58,6 +51,7 @@ class PDU(object):
         )
         self.connectors = []
         self.sensors = []
+        self.phases = []
 
     def _http_client(self, endpoint: str,
                      auth: Optional[tuple] = (),
@@ -188,11 +182,41 @@ class PDU(object):
             sensor = self.sensors[resp['json']['id']]
             sensor.update(**resp['json']['result']['_ret_'])
 
+        # Get phase sensors (they are not listed in the connectors)
+        self.get_phases()
+
         logger.info(
             '(%s) %s inlet(s), %s outlet(s), and %s device(s) with '
             'a total of %s sensor(s) found'
             % (self.name, n_inlets, n_outlets, n_devices, n_sensors)
         )
+
+    def get_phases(self):
+        """Custom function to hard-code phase sensors"""
+        connector = Connector(
+            rid=self.uri_pdu,
+            type_='phase',
+            parent=self,
+        )
+        connector.update(
+            method='metadata', **{'label': 'phases', 'type': 'inlet'}
+        )
+        self.connectors.append(connector)
+        phases = {
+            'L1': '/tfwopaque/sensors.NumericSensor:4.0.3/IOP0Current',
+            'L2': '/tfwopaque/sensors.NumericSensor:4.0.3/I0P1Current',
+            'L3': '/tfwopaque/sensors.NumericSensor:4.0.3/I0P2Current'
+        }
+
+        for k, v in phases.items():
+            self.sensors.append(Sensor(
+                rid=v,
+                interface='sensors.NumericSensor:4.0.3',
+                parent=connector,
+                name='phase_%s' % k,
+                unit='ampere',
+                metric='current'
+            ))
 
     def clear_sensors(self):
         for sensor in self.sensors:
