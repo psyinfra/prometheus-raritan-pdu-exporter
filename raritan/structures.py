@@ -203,20 +203,22 @@ class PDU(object):
         )
         self.connectors.append(connector)
         phases = {
-            'L1': '/tfwopaque/sensors.NumericSensor:4.0.3/IOP0Current',
+            'L1': '/tfwopaque/sensors.NumericSensor:4.0.3/I0P0Current',
             'L2': '/tfwopaque/sensors.NumericSensor:4.0.3/I0P1Current',
             'L3': '/tfwopaque/sensors.NumericSensor:4.0.3/I0P2Current'
         }
 
         for k, v in phases.items():
-            self.sensors.append(Sensor(
+            sensor = Sensor(
                 rid=v,
                 interface='sensors.NumericSensor:4.0.3',
                 parent=connector,
                 name='phase_%s' % k,
                 unit='ampere',
                 metric='current'
-            ))
+            )
+            sensor.update(**{'type': {'type': 2, 'unit': 2}})
+            self.sensors.append(sensor)
 
     def clear_sensors(self):
         for sensor in self.sensors:
