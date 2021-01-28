@@ -193,15 +193,6 @@ class PDU(object):
 
     def get_phases(self):
         """Custom function to hard-code phase sensors"""
-        connector = Connector(
-            rid=self.uri_pdu,
-            type_='phase',
-            parent=self,
-        )
-        connector.update(
-            method='metadata', **{'label': 'phases', 'type': 'inlet'}
-        )
-        self.connectors.append(connector)
         phases = {
             'L1': '/tfwopaque/sensors.NumericSensor:4.0.3/I0P0Current',
             'L2': '/tfwopaque/sensors.NumericSensor:4.0.3/I0P1Current',
@@ -209,11 +200,20 @@ class PDU(object):
         }
 
         for k, v in phases.items():
+            connector = Connector(
+                rid=self.uri_pdu,
+                type_='phase',
+                parent=self,
+            )
+            connector.update(
+                method='metadata', **{'label': k, 'type': 'inlet'}
+            )
+            self.connectors.append(connector)
             sensor = Sensor(
                 rid=v,
                 interface='sensors.NumericSensor:4.0.3',
                 parent=connector,
-                name='phase_%s' % k,
+                name='phase',
                 unit='ampere',
                 metric='current'
             )
