@@ -161,7 +161,8 @@ class PDU(object):
                         label=pole['label'],
                         line=pole['line'],
                         node_id=pole['nodeId'],
-                        parent=inlets[resp['json']['id']],
+                        inlet=inlets[resp['json']['id']],
+                        parent=self
                     )
                 )
 
@@ -321,6 +322,7 @@ class Connector(object):
 
 class Pole(object):
     def __init__(self, label: str, line: int, node_id: int,
+                 inlet: Optional[Connector] = None,
                  parent: Optional[PDU] = None):
         """Stores pole data.
 
@@ -339,6 +341,7 @@ class Pole(object):
         self.custom_label = None
         self.line = line
         self.node_id = node_id
+        self.inlet = inlet
         self.parent = parent
 
 
