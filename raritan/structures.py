@@ -337,8 +337,8 @@ class Pole(object):
             The Connector object this pole belongs to
         """
         self.type = 'pole'
-        self.label = label if label else f'L{line+1}'
-        self.custom_label = None
+        self.label = inlet.label
+        self.custom_label = label if label else f'L{line+1}'
         self.line = line
         self.node_id = node_id
         self.inlet = inlet
