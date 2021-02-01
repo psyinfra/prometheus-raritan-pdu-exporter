@@ -199,8 +199,8 @@ class PDU(object):
                     )
                 )
             elif connector.type in ['inlet', 'outlet']:
-                # connectors w/ multiple sensors; returns no data if unused
-                for metric, data in ret.items:
+                # connectors w/ multiple sensors; returns none data if unused
+                for metric, data in ret.items():
                     if data is not None:
                         self.sensors.append(
                             Sensor(
