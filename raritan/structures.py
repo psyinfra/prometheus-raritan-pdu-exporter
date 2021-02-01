@@ -71,7 +71,7 @@ class PDU(object):
 
     def bulk(self, reqs: list, **kwargs):
         return self.client.send(
-            Request('performBulk', {'requests': reqs}), timeout=10, **kwargs
+            Request('performBulk', requests=reqs), timeout=10, **kwargs
         )
 
     def get_sources(self):  # rename to crawl()
