@@ -69,9 +69,10 @@ class PDU(object):
     def send(self, request: Request, **kwargs):
         return self.client.send(request, timeout=10, **kwargs)
 
-    def bulk(self, req: list, **kwargs):
-        return self.client.send(Request('performBulk', req), timeout=10,
-                                **kwargs)
+    def bulk(self, reqs: list, **kwargs):
+        return self.client.send(
+            Request('performBulk', {'requests': reqs}), timeout=10, **kwargs
+        )
 
     def get_sources(self):  # rename to crawl()
         """request all sources (connectors and their sensors) from the PDU"""
