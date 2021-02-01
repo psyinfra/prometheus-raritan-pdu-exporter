@@ -339,6 +339,7 @@ class Pole(object):
         self.custom_label = None
         self.line = line
         self.node_id = node_id
+        self.parent = parent
 
 
 class Sensor(object):
