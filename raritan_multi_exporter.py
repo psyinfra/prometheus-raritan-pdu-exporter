@@ -1,11 +1,11 @@
-from typing import Optional, List
 import argparse
 import urllib3
 import logging
 import time
 
-from prometheus_client import (start_http_server, REGISTRY)
+from prometheus_client import start_http_server, REGISTRY
 from raritan.exporter import RaritanMultiExporter
+
 
 # Raritan PDU has no SSL certificate, ignore the ensuing warning
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
