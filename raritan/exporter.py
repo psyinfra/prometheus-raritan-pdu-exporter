@@ -34,10 +34,9 @@ class RaritanExporter:
         self.threading = False
         self.setup(**kwargs)
 
-    def setup(self,
-              instance: str,
-              auth: Optional[tuple] = (),
-              insecure: Optional[bool] = False):
+    def setup(
+            self, instance: str, auth: Optional[tuple] = (),
+            insecure: Optional[bool] = False):
         self.pdu = PDU(instance, auth=auth, insecure=insecure)
         self.pdu.get_sources()
 
@@ -70,10 +69,8 @@ class RaritanExporter:
         for metric in metrics:
             if metric.interface in RARITAN_GAUGES:
                 g = GaugeMetricFamily(
-                    metric.name,
-                    metric.description,
-                    labels=labels
-                )
+                    metric.name, metric.description, labels=labels)
+
                 for sensor in metric.sensors:
                     if sensor.value is None:
                         continue
@@ -83,20 +80,15 @@ class RaritanExporter:
                     else:
                         label = sensor.parent.label
 
-                    g.add_metric(
-                        [sensor.parent.parent.location,
-                         label,
-                         sensor.parent.type,
-                         sensor.parent.label],
-                        sensor.value
-                    )
+                    g.add_metric([
+                        sensor.parent.parent.location, label,
+                        sensor.parent.type, sensor.parent.label],
+                        sensor.value)
 
             elif metric.interface in RARITAN_COUNTERS:
                 g = CounterMetricFamily(
-                    metric.name,
-                    metric.description,
-                    labels=labels
-                )
+                    metric.name, metric.description, labels=labels)
+
                 for sensor in metric.sensors:
                     if sensor.value is None:
                         continue
@@ -106,13 +98,10 @@ class RaritanExporter:
                     else:
                         label = sensor.parent.label
 
-                    g.add_metric(
-                        [sensor.parent.parent.location,
-                         label,
-                         sensor.parent.type,
-                         sensor.parent.label],
-                        sensor.value
-                    )
+                    g.add_metric([
+                        sensor.parent.parent.location, label,
+                        sensor.parent.type, sensor.parent.label],
+                        sensor.value)
 
             else:  # interface cannot be collected (i.e., state sensors)
                 continue
@@ -141,10 +130,9 @@ class RaritanMultiExporter(RaritanExporter):
         Whether to allow a connection to an insecure raritan API
     """
 
-    def setup(self,
-              config: str,
-              threading: Optional[bool] = True,
-              insecure: Optional[bool] = True):
+    def setup(
+            self, config: str, threading: Optional[bool] = True,
+            insecure: Optional[bool] = True):
         self.threading = threading
         self.pdus = self.get_pdus(config, insecure)
 

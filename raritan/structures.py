@@ -13,6 +13,7 @@ from raritan.globals import (SENSORS_NUMERIC, SENSORS_STATE, SENSORS_TYPES,
                              SENSORS_UNITS)
 from raritan.utils import camel_to_snake
 
+
 # Internal logging
 logger = logging.getLogger('raritan_exporter')
 
@@ -21,11 +22,11 @@ class PDU(object):
     model_requests = [
         ['/model/pdu/0', 'getInlets', 'inlet'],
         ['/model/pdu/0', 'getOutlets', 'outlet'],
-        ['/model/peripheraldevicemanager', 'getDeviceSlots', 'device']
-    ]
+        ['/model/peripheraldevicemanager', 'getDeviceSlots', 'device']]
 
-    def __init__(self, location: str, name: Optional[str] = None,
-                 auth: Optional[tuple] = (), insecure: Optional[bool] = True):
+    def __init__(
+            self, location: str, name: Optional[str] = None,
+            auth: Optional[tuple] = (), insecure: Optional[bool] = True):
         """Raritan power distribution unit (PDU) data object.
 
         Sets up a connection to the bulk json-rpc interface for Raritan PDUs
@@ -71,10 +72,9 @@ class PDU(object):
 
     def bulk(self, reqs: list, **kwargs):
         return self.client.send(
-            Request('performBulk', requests=reqs), timeout=10, **kwargs
-        )
+            Request('performBulk', requests=reqs), timeout=10, **kwargs)
 
-    def get_sources(self):  # rename to crawl()
+    def get_sources(self):  # TODO: rename to crawl()
         """request all sources (connectors and their sensors) from the PDU"""
         self._get_connectors()
         self._get_poles()
@@ -88,12 +88,11 @@ class PDU(object):
         logger.info(
             '(%s) %s inlet(s), %s outlet(s), %s pole(s) and %s device(s) with '
             'a total of %s sensor(s) found'
-            % (self.name, n_inlets, n_outlets, n_poles, n_devices, n_sensors)
-        )
+            % (self.name, n_inlets, n_outlets, n_poles, n_devices, n_sensors))
 
-    def _http_client(self, endpoint: str,
-                     auth: Optional[tuple] = (),
-                     verify: Optional[bool] = False) -> HTTPClient:
+    def _http_client(
+            self, endpoint: str, auth: Optional[tuple] = (),
+            verify: Optional[bool] = False) -> HTTPClient:
         """Set up an HTTP client for json-rpc requests"""
         logger.info('(%s) polling at %s' % (self.name, endpoint))
         client = HTTPClient(endpoint)
@@ -114,34 +113,32 @@ class PDU(object):
         # Get connector RIDs
         response = self.bulk([
             {'rid': m[0], 'json': Request(m[1], request_id=m[2])}
-            for m in self.model_requests
-        ])
+            for m in self.model_requests])
         self.connectors = [
             Connector(rid=ret['rid'], type_=resp['json']['id'], parent=self)
             for resp in response.data.result['responses']
-            for ret in resp['json']['result']['_ret_']
-        ]
+            for ret in resp['json']['result']['_ret_']]
 
         # Get connector metadata
         response = self.bulk([
             {'rid': c.rid, 'json': Request('getMetaData', request_id=i)}
             for i, c in enumerate(self.connectors)
-            if c.type != 'device'  # devices have no metadata
-        ])
+            if c.type != 'device'])  # devices have no metadata
+
         for resp in response.data.result['responses']:
-            self.connectors[resp['json']['id']].update(
-                'metadata', **resp['json']['result']['_ret_']
-            )
+            self.connectors[
+                resp['json']['id']].update(
+                    'metadata', **resp['json']['result']['_ret_'])
 
         # Get connector settings
         response = self.bulk([
             {'rid': c.rid, 'json': Request('getSettings', request_id=i)}
-            for i, c in enumerate(self.connectors)
-        ])
+            for i, c in enumerate(self.connectors)])
+
         for resp in response.data.result['responses']:
-            self.connectors[resp['json']['id']].update(
-                'settings', **resp['json']['result']['_ret_']
-            )
+            self.connectors[
+                resp['json']['id']].update(
+                    'settings', **resp['json']['result']['_ret_'])
 
     def _get_poles(self):
         """Get inlet poles and their associated sensors. This is done
@@ -151,76 +148,58 @@ class PDU(object):
         inlets = [c for c in self.connectors if c.type == 'inlet']
         response = self.bulk([
             {'rid': c.rid, 'json': Request('getPoles', request_id=i)}
-            for i, c in enumerate(inlets)
-        ])
+            for i, c in enumerate(inlets)])
 
         for resp in response.data.result['responses']:
             for pole in resp['json']['result']['_ret_']:
-                self.poles.append(
-                    Pole(
-                        label=pole['label'],
-                        line=pole['line'],
-                        node_id=pole['nodeId'],
-                        inlet=inlets[resp['json']['id']],
-                        parent=self
-                    )
-                )
+                self.poles.append(Pole(
+                    label=pole['label'], line=pole['line'],
+                    node_id=pole['nodeId'], inlet=inlets[resp['json']['id']],
+                    parent=self))
 
                 # Get associated sensors
                 for metric, data in pole.items():
                     non_metrics = ['label', 'line', 'nodeId']
                     if metric not in non_metrics and data is not None:
-                        self.sensors.append(
-                            Sensor(
-                                rid=data['rid'],
-                                interface=data['type'],
-                                parent=self.poles[-1],
-                                name=metric
-                            )
-                        )
+                        self.sensors.append(Sensor(
+                            rid=data['rid'], interface=data['type'],
+                            parent=self.poles[-1], name=metric))
 
     def _get_sensors(self):
         """Obtain sensor URI's and meta-data for each connector"""
         # Get sensor RIDs from connectors
         response = self.bulk([
             {'rid': c.rid, 'json': Request(c.get_sensors, request_id=i)}
-            for i, c in enumerate(self.connectors)
-        ])
+            for i, c in enumerate(self.connectors)])
+
         for resp in response.data.result['responses']:
             connector = self.connectors[resp['json']['id']]
             ret = resp['json']['result']['_ret_']
 
             if connector.type == 'device' and ret is not None:
                 # connectors w/ one sensor; returns no data if unused
-                self.sensors.append(
-                    Sensor(
-                        rid=ret['value']['device']['rid'],
-                        interface=ret['value']['device']['type'],
-                        parent=connector
-                    )
-                )
+                self.sensors.append(Sensor(
+                    rid=ret['value']['device']['rid'],
+                    interface=ret['value']['device']['type'],
+                    parent=connector))
+
             elif connector.type in ['inlet', 'outlet']:
                 # connectors w/ multiple sensors; returns none data if unused
                 for metric, data in ret.items():
                     if data is not None:
-                        self.sensors.append(
-                            Sensor(
-                                rid=data['rid'],
-                                interface=data['type'],
-                                parent=connector,
-                                name=metric
-                            )
-                        )
+                        self.sensors.append(Sensor(
+                            rid=data['rid'], interface=data['type'],
+                            parent=connector, name=metric))
 
         # Get sensor metadata
         response = self.bulk([
             {'rid': s.rid, 'json': Request('getMetaData', request_id=i)}
             for i, s in enumerate(self.sensors)
-            if s.interface not in SENSORS_STATE  # these have no metadata
-        ])
+            if s.interface not in SENSORS_STATE])  # these have no metadata
+
         for r in response.data.result['responses']:
-            self.sensors[r['json']['id']].update(
-                **r['json']['result']['_ret_'])
+            self.sensors[
+                r['json']['id']].update(**r['json']['result']['_ret_'])
 
     def clear_sensors(self):
         for sensor in self.sensors:
@@ -242,8 +221,7 @@ class PDU(object):
 
             query['requests'].append({
                 'rid': sensor.rid,
-                'json': Request(method, request_id=sensor_id)
-            })
+                'json': Request(method, request_id=sensor_id)})
 
         try:
             response = self.send(Request('performBulk', **query))
@@ -279,8 +257,7 @@ class PDU(object):
 
 class Connector(object):
     method_by_type = {
-        'inlet': 'getSensors', 'outlet': 'getSensors', 'device': 'getDevice'
-    }
+        'inlet': 'getSensors', 'outlet': 'getSensors', 'device': 'getDevice'}
 
     def __init__(self, rid: str, type_: str, parent: Optional[PDU] = None):
         """Stores connector (inlet, outlet, or device slot) data.
@@ -321,9 +298,9 @@ class Connector(object):
 
 
 class Pole(object):
-    def __init__(self, label: str, line: int, node_id: int,
-                 inlet: Optional[Connector] = None,
-                 parent: Optional[PDU] = None):
+    def __init__(
+            self, label: str, line: int, node_id: int,
+            inlet: Optional[Connector] = None, parent: Optional[PDU] = None):
         """Stores pole data.
 
         Unlike other object types, poles don't have an RID. Instead, they
@@ -369,11 +346,10 @@ class Sensor(object):
         The unit of measurement of the metric as returned from the sensor
         meta data
     """
-    def __init__(self, rid: str, interface: str,
-                 parent: Optional[Connector] = None, 
-                 name: Optional[str] = None,
-                 metric: Optional[str] = 'unspecified', 
-                 unit: Optional[str] = 'none'):
+    def __init__(
+            self, rid: str, interface: str, parent: Optional[Connector] = None,
+            name: Optional[str] = None, metric: Optional[str] = 'unspecified',
+            unit: Optional[str] = 'none'):
         self.rid = rid
         self.interface = interface
         self.parent = parent
@@ -395,12 +371,12 @@ class Sensor(object):
         self.longname = 'raritan_sensors_%s' % camel_to_snake(self.name)
 
         if self.unit not in (None, 'none'):
-            self.longname = '%s_in_%s' % (self.longname,
-                                          camel_to_snake(self.unit))
+            self.longname = '%s_in_%s' % (
+                self.longname, camel_to_snake(self.unit))
 
-    def set_value(self, 
-                  value: Optional[float] = None, 
-                  timestamp: Optional[int] = None):
+    def set_value(
+            self, value: Optional[float] = None,
+            timestamp: Optional[int] = None):
         """Set the value of the sensor as obtained from a reading"""
         self.value = value
         self.timestamp = timestamp

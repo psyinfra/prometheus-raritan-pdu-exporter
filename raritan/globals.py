@@ -34,8 +34,7 @@ SENSORS_TYPES = [
     'luminous_energy', 'luminous_flux', 'illuminance', 'luminous_emittance',
     'motion', 'occupancy', 'tamper', 'dry_contact', 'powered_dry_contact', 
     'absolute_humidity', 'door_state', 'door_lock_state', 'door_handle_lock',
-    'crest_factor'
-]
+    'crest_factor']
 SENSORS_UNITS = [
     'none', 'volt', 'ampere', 'watt', 'volt_amp', 'watt_hour',
     'volt_amp_hour', 'degree_celsius', 'hz', 'percent', 'meter_per_sec',
@@ -46,21 +45,16 @@ SENSORS_UNITS = [
     'kelvin', 'joule', 'coulomb', 'nit', 'lumen', 'lumen_second', 'lux',
     'psi', 'newton', 'foot', 'foot_per_sec', 'cubic_meter', 'radiant',
     'steradiant', 'henry', 'farad', 'mol', 'becquerel', 'gray', 'sievert',
-    'g_per_cubic_meter'
-]
+    'g_per_cubic_meter']
 SENSORS_NUMERIC = [
     'sensors.NumericSensor:4.0.3', 
     'pdumodel.TypeBResidualCurrentNumericSensor:1.0.2',
-    'sensors.AccumulatingNumericSensor:2.0.3',
-]
+    'sensors.AccumulatingNumericSensor:2.0.3',]
 SENSORS_STATE = [
-    'pdumodel.ResidualCurrentStateSensor:2.0.3', 'sensors.StateSensor:4.0.3'
-]
+    'pdumodel.ResidualCurrentStateSensor:2.0.3', 'sensors.StateSensor:4.0.3']
 RARITAN_GAUGES = [
     'sensors.NumericSensor:4.0.3', 
-    'pdumodel.TypeBResidualCurrentNumericSensor:1.0.2'
-]
+    'pdumodel.TypeBResidualCurrentNumericSensor:1.0.2']
 RARITAN_COUNTERS = [
-    'sensors.AccumulatingNumericSensor:2.0.3'
-]
+    'sensors.AccumulatingNumericSensor:2.0.3']
 

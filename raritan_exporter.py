@@ -13,58 +13,37 @@ urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 # External (root level) logging level
 logging.basicConfig(
     level=logging.WARNING,
-    format='[%(asctime)s] %(levelname)s: %(message)s'
-)
+    format='[%(asctime)s] %(levelname)s: %(message)s')
 
 # Internal logging level
 logger = logging.getLogger('raritan_exporter')
 logger.setLevel(level=logging.DEBUG)
 
 # Measure collection time
-REQUEST_TIME = Summary('raritan_collector_collect_seconds',
-                       'Time spent to collect metrics from the Raritan PDU')
+REQUEST_TIME = Summary(
+    'raritan_collector_collect_seconds',
+    'Time spent to collect metrics from the Raritan PDU')
 
 
 def parse_args():
     parser = argparse.ArgumentParser(
-        description='Python-based Raritan PDU exporter for prometheus.io'
-    )
+        description='Python-based Raritan PDU exporter for prometheus.io')
     parser.add_argument(
-        '-a', '--address',
-        metavar='address',
-        required=True,
-        help='address of the raritan PDU server'
-    )
+        '-a', '--address', metavar='address', required=True,
+        help='address of the raritan PDU server')
     parser.add_argument(
-        '-p', '--port',
-        metavar='port',
-        required=False,
-        type=int,
-        help='listen to this port',
-        default=8001
-    )
+        '-p', '--port', metavar='port', required=False, type=int,
+        help='listen to this port', default=8001)
     parser.add_argument(
-        '--user',
-        metavar='user',
-        required=False,
-        help='raritan API user',
-        default=None
-    )
+        '--user', metavar='user', required=False, help='raritan API user',
+        default=None)
     parser.add_argument(
-        '--password',
-        metavar='password',
-        required=False,
-        help='raritan API password',
-        default=None
-    )
+        '--password', metavar='password', required=False,
+        help='raritan API password', default=None)
     parser.add_argument(
-        '-k', '--insecure',
-        dest='insecure',
-        required=False,
+        '-k', '--insecure', dest='insecure', required=False,
         action='store_true',
-        help='allow a connection to an insecure raritan API',
-        default=False
-    )
+        help='allow a connection to an insecure raritan API', default=False)
     return parser.parse_args()
 
 
@@ -73,10 +52,8 @@ def main():
         args = parse_args()
         port = int(args.port)
         REGISTRY.register(RaritanExporter(
-            address=args.address,
-            auth=(args.user, args.password),
-            insecure=args.insecure
-        ))
+            address=args.address, auth=(args.user, args.password),
+            insecure=args.insecure))
         logger.info('listening on :%s' % port)
         start_http_server(port)
 
