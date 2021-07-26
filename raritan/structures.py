@@ -259,7 +259,7 @@ class Connector(object):
         self.type = type_
         self.get_sensors = self.method_by_type[type_]
         self.parent = parent
-        self.socket = None  # plug or receptacle
+        self.socket = None  # 'plug' or 'receptacle'
         self.label = rid.rsplit('/', 1)[-1]
         self.custom_label = None
 
