@@ -38,7 +38,7 @@ class RaritanExporter:
             self, instance: str, auth: Optional[tuple] = (),
             insecure: Optional[bool] = False):
         self.pdu = PDU(instance, auth=auth, insecure=insecure)
-        self.pdu.get_sources()
+        self.pdu.crawl()
 
     def get_reading(self) -> List[Metric]:
         """Obtain a sensor reading for all sensors from all PDUs"""
@@ -148,7 +148,7 @@ class RaritanMultiExporter(RaritanExporter):
             threads = []
 
             for pdu in pdus:
-                threads.append(Thread(target=pdu.get_sources))
+                threads.append(Thread(target=pdu.crawl))
 
             for thread in threads:
                 thread.start()
@@ -158,7 +158,7 @@ class RaritanMultiExporter(RaritanExporter):
 
         else:
             for pdu in pdus:
-                pdu.get_sources()
+                pdu.crawl()
 
         return pdus
 

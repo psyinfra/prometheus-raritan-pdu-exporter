@@ -74,7 +74,7 @@ class PDU(object):
         return self.client.send(
             Request('performBulk', requests=reqs), timeout=10, **kwargs)
 
-    def get_sources(self):  # TODO: rename to crawl()
+    def crawl(self):
         """request all sources (connectors and their sensors) from the PDU"""
         self._get_connectors()
         self._get_poles()
