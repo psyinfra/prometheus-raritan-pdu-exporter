@@ -90,24 +90,6 @@ class PDU(object):
             'a total of %s sensor(s) found'
             % (self.name, n_inlets, n_outlets, n_poles, n_devices, n_sensors))
 
-    def _http_client(
-            self, endpoint: str, auth: Optional[tuple] = (),
-            verify: Optional[bool] = False) -> HTTPClient:
-        """Set up an HTTP client for json-rpc requests"""
-        logger.info('(%s) polling at %s' % (self.name, endpoint))
-        client = HTTPClient(endpoint)
-        client.session.auth = auth
-        client.session.verify = verify
-        client.session.headers.update({"Content-Type": "application/json-rpc"})
-
-        # Set maximum number of retries to 1, to prevent pool overflows
-        retry = Retry(connect=1)
-        adapter = HTTPAdapter(max_retries=retry)
-        client.session.mount('http://', adapter)
-        client.session.mount('https://', adapter)
-
-        return client
-
     def _get_connectors(self):
         """Find all connectors and retrieve all associated meta-data"""
         # Get connector RIDs
