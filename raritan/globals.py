@@ -19,6 +19,8 @@ Raritan Python API version 3.6.0
         all sensor interfaces that are to be recorded as prometheus gauges
     RARITAN_COUNTERS :
         all sensor interfaces that are to be recorded as prometheus counters
+    SENSORS_DESCRIPTION :
+        optional description per sensor
 
 """
 
