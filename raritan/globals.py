@@ -49,7 +49,7 @@ SENSORS_UNITS = [
 SENSORS_NUMERIC = [
     'sensors.NumericSensor:4.0.3', 
     'pdumodel.TypeBResidualCurrentNumericSensor:1.0.2',
-    'sensors.AccumulatingNumericSensor:2.0.3',]
+    'sensors.AccumulatingNumericSensor:2.0.3']
 SENSORS_STATE = [
     'pdumodel.ResidualCurrentStateSensor:2.0.3', 'sensors.StateSensor:4.0.3']
 RARITAN_GAUGES = [
@@ -57,4 +57,24 @@ RARITAN_GAUGES = [
     'pdumodel.TypeBResidualCurrentNumericSensor:1.0.2']
 RARITAN_COUNTERS = [
     'sensors.AccumulatingNumericSensor:2.0.3']
-
+SENSORS_DESCRIPTION = {
+    'raritan_sensors_voltage_in_volt':
+        'RMS voltage between this phase and the next',
+    'raritan_sensors_voltage_ln_in_volt':
+        'RMS voltage between the phase and the neutral/earth potential',
+    'raritan_sensors_current_in_ampere': 'RMS current',
+    'raritan_sensors_residual_current_in_ampere': 'Residual current',
+    'raritan_sensors_residual_dc_current_in_ampere': 'Residual DC current',
+    'raritan_sensors_active_power_in_watt': 'Active power',
+    'raritan_sensors_apparent_power_in_volt_amp': 'Apparent Power',
+    'raritan_sensors_power_factor': 'Total power factor (no unit)',
+    'raritan_sensors_active_energy_in_watt_hour_total':
+        'Active energy counter',
+    'raritan_sensors_unbalanced_current_in_percent':
+        'Maximum difference between the three phase current readings and the '
+        'average current reading',
+    'raritan_sensors_line_frequency_in_hz': 'Line frequency',
+    'raritan_sensors_temperature_in_degree_celsius': 'Measured temperature',
+    'raritan_sensors_humidity_in_percent': 'Measured humidity',
+    'raritan_sensors_absolute_humidity_in_g_per_cubic_meter':
+        'Measured absolute humidity'}

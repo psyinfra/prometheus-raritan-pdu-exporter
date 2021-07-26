@@ -10,7 +10,7 @@ from requests.packages.urllib3.util.retry import Retry
 import requests
 
 from raritan.globals import (SENSORS_NUMERIC, SENSORS_STATE, SENSORS_TYPES,
-                             SENSORS_UNITS)
+                             SENSORS_UNITS, SENSORS_DESCRIPTION)
 from raritan.utils import camel_to_snake
 
 
@@ -384,7 +384,7 @@ class Metric(object):
         self.name = None
         self.interface = None
         self.unit = None
-        self.description = 'none'  # TODO: add descriptions
+        self.description = 'none'
         self.sensors = []
         self.add(sensor)
 
@@ -397,5 +397,8 @@ class Metric(object):
 
         if self.name is None:
             self.name = sensor.longname
+
+        if self.name in SENSORS_DESCRIPTION.keys():
+            self.description = SENSORS_DESCRIPTION[self.name]
 
         self.sensors.append(sensor)
