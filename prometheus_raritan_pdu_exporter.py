@@ -3,10 +3,12 @@ import argparse
 import urllib3
 import logging
 import time
+import urllib.parse
 
 from prometheus_client import start_http_server, REGISTRY
 from raritan.exporter import RaritanExporter
 
+DEFAULT_PORT = 9840
 
 # Raritan PDU has no SSL certificate, ignore the ensuing warning
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
@@ -27,8 +29,9 @@ def parse_args():
         '-c', '--config', metavar='config', required=True,
         help='configuration json file containing PDU addresses and login info')
     parser.add_argument(
-        '-p', '--port', metavar='port', required=False, type=int,
-        help='listen to this port', default=9840)
+        '-w', '--web.listen-address', metavar='listen_address', required=False,
+        type=str, help='Address and port to listen on',
+        default=f':{DEFAULT_PORT}')
     parser.add_argument(
         '-t', '--threading', dest='threading', required=False, default=False,
         action='store_true',
@@ -43,12 +46,15 @@ def parse_args():
 def main():
     try:
         args = parse_args()
-        port = int(args.port)
+        listen_address = urllib.parse.urlsplit(f'//{args.listen_address}')
+        addr = listen_address.hostname if listen_address.hostname else ''
+        port = listen_address.port if listen_address.port else DEFAULT_PORT
+
         REGISTRY.register(RaritanExporter(
             config=args.config, threading=args.threading,
             insecure=args.insecure))
-        logger.info('listening on :%s' % port)
-        start_http_server(port)
+        logger.info('listening on :%s' % listen_address.netloc)
+        start_http_server(port, addr=addr)
 
         while True:
             time.sleep(1)
