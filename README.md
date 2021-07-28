@@ -12,37 +12,18 @@ handful of methods are used (`getInlets`, `getOutlets`, `getMetaData`,
 endpoint, ignoring most of the methods included in the Python API. As a result
 we do not have to bundle the Raritan PDU Python API with this project.
 
-## Usage for single PDU collection
+## Usage for PDU collection
 
-    raritan_exporter.py [-h] -a address [-p port] [--user user]
-                        [--password password] [-k]
-
-    optional arguments:
-      -h, --help            show this help message and exit
-      -a address, --address address
-                            address of the raritan PDU server
-      -p port, --port port  listen to this port
-      --user user           raritan API user
-      --password password   raritan API password
-      -k, --insecure        allow a connection to an insecure raritan API
-
-### Example
-
-    python3 raritan_exporter.py -a https://address.of.pdu -p 8001 --user username --password very_secure_password -k
-
-## Usage for multiple PDU collection
-The same can be achieved with running multiple instances of the single PDU
-collection exporter, except the multi-exporter exposes all metrics on the same
-port.
-
-    raritan_multi_exporter.py [-h] -c config [-p port] [-t] [-k]
-
+    prometheus_raritan_pdu_exporter.py [-h] -c config [-w listen_address]
+                                       [-t] [-k]
+        
     optional arguments:
       -h, --help            show this help message and exit
       -c config, --config config
                             configuration json file containing PDU addresses and
                             login info
-      -p port, --port port  listen to this port
+      -w listen_address, --web.listen-address listen_address
+                            Address and port to listen on (default = :9840)
       -t, --threading       whether to use multi-threading for sensor readings
                             (faster)
       -k, --insecure        allow a connection to an insecure raritan API
@@ -50,7 +31,8 @@ port.
 
 ### Example
 
-    python3 raritan_multi_exporter.py -c config.json -p 8001 -t -k
+    python3 prometheus_raritan_pdu_exporter.py --web.listen-address :9840 -t -k
+
 
 ## Installation
 

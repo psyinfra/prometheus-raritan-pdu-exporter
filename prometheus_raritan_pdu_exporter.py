@@ -29,7 +29,7 @@ def parse_args():
         '-c', '--config', metavar='config', required=True,
         help='configuration json file containing PDU addresses and login info')
     parser.add_argument(
-        '-w', '--web.listen-address', metavar='listen_address', required=False,
+        '-w', '--web.listen-address', dest='listen_address', required=False,
         type=str, help='Address and port to listen on',
         default=f':{DEFAULT_PORT}')
     parser.add_argument(
