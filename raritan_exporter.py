@@ -33,7 +33,7 @@ def parse_args():
         help='address of the raritan PDU server')
     parser.add_argument(
         '-p', '--port', metavar='port', required=False, type=int,
-        help='listen to this port', default=8001)
+        help='listen to this port', default=9840)
     parser.add_argument(
         '--user', metavar='user', required=False, help='raritan API user',
         default=None)

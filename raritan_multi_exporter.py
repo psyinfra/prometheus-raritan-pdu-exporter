@@ -27,7 +27,7 @@ def parse_args():
         help='configuration json file containing PDU addresses and login info')
     parser.add_argument(
         '-p', '--port', metavar='port', required=False, type=int,
-        help='listen to this port', default=8001)
+        help='listen to this port', default=9840)
     parser.add_argument(
         '-t', '--threading', dest='threading', required=False, default=False,
         action='store_true',
