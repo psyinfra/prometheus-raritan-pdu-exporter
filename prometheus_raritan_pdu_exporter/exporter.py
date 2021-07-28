@@ -36,16 +36,8 @@ class RaritanExporter:
     insecure : bool, optional
         Whether to allow a connection to an insecure Raritan API
     """
-    def __init__(self, **kwargs):
-        self.pdu = None
-        self.pdus = []
+    def __init__(self, config: str, insecure: Optional[bool] = True):
         self.threading = False
-        self.setup(**kwargs)
-
-    def setup(
-            self, config: str, threading: Optional[bool] = True,
-            insecure: Optional[bool] = True):
-        self.threading = threading
         self.pdus = self.get_pdus(config, insecure)
 
     def get_pdus(self, config: str, insecure: Optional[bool] = True) -> list:
@@ -53,8 +45,10 @@ class RaritanExporter:
         with open(config) as json_file:
             data = json.load(json_file)
 
-        pdus = [PDU(v['address'], k, (v['user'], v['password']), insecure)
-                for k, v in data.items()]
+        pdus = [
+            PDU(v['address'], k, (v['user'], v['password']), insecure)
+            for k, v in data.items()]
+        self.threading = True if len(pdus) > 1 else False
 
         if self.threading:
             threads = []

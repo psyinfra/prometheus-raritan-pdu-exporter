@@ -30,12 +30,8 @@ def parse_args():
         help='configuration json file containing PDU addresses and login info')
     parser.add_argument(
         '-w', '--web.listen-address', dest='listen_address', required=False,
-        type=str, help='Address and port to listen on',
+        type=str, help='Address and port to listen on (default = :9840)',
         default=f':{DEFAULT_PORT}')
-    parser.add_argument(
-        '-t', '--threading', dest='threading', required=False, default=False,
-        action='store_true',
-        help='whether to use multi-threading for sensor readings (faster)')
     parser.add_argument(
         '-k', '--insecure', dest='insecure', required=False, default=False,
         action='store_true',
@@ -51,8 +47,7 @@ def main():
         port = listen_address.port if listen_address.port else DEFAULT_PORT
 
         REGISTRY.register(RaritanExporter(
-            config=args.config, threading=args.threading,
-            insecure=args.insecure))
+            config=args.config, insecure=args.insecure))
         logger.info('listening on %s' % listen_address.netloc)
         start_http_server(port, addr=addr)
 
