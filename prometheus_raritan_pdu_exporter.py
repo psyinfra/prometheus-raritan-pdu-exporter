@@ -4,7 +4,7 @@ import logging
 import time
 
 from prometheus_client import start_http_server, REGISTRY
-from raritan.exporter import RaritanMultiExporter
+from raritan.exporter import RaritanExporter
 
 
 # Raritan PDU has no SSL certificate, ignore the ensuing warning
@@ -15,7 +15,7 @@ logging.basicConfig(
     level=logging.WARNING, format='[%(asctime)s] %(levelname)s: %(message)s')
 
 # Internal logging level
-logger = logging.getLogger('raritan_exporter')
+logger = logging.getLogger('prometheus_raritan_pdu_exporter')
 logger.setLevel(level=logging.DEBUG)
 
 
@@ -43,7 +43,7 @@ def main():
     try:
         args = parse_args()
         port = int(args.port)
-        REGISTRY.register(RaritanMultiExporter(
+        REGISTRY.register(RaritanExporter(
             config=args.config, threading=args.threading,
             insecure=args.insecure))
         logger.info('listening on :%s' % port)

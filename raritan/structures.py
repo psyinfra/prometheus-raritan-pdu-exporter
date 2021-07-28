@@ -9,13 +9,14 @@ from requests.adapters import HTTPAdapter
 from requests.packages.urllib3.util.retry import Retry
 import requests
 
-from raritan.globals import (SENSORS_NUMERIC, SENSORS_STATE, SENSORS_TYPES,
-                             SENSORS_UNITS, SENSORS_DESCRIPTION)
+from raritan.globals import (
+    SENSORS_NUMERIC, SENSORS_STATE, SENSORS_TYPES, SENSORS_UNITS,
+    SENSORS_DESCRIPTION)
 from raritan.utils import camel_to_snake
 
 
 # Internal logging
-logger = logging.getLogger('raritan_exporter')
+logger = logging.getLogger('prometheus_raritan_pdu_exporter')
 
 
 class PDU(object):
