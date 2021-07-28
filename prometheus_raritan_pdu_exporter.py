@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 import argparse
 import urllib3
 import logging
