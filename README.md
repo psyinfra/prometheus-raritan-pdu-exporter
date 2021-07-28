@@ -1,4 +1,4 @@
-# Raritan Exporter
+# Prometheus Raritan PDU Exporter
 Python-based Raritan PDU exporter for [prometheus.io](https://prometheus.io/).
 
 This exporter uses the Raritan json-rpc API to find inlet sensors, outlet
@@ -36,7 +36,7 @@ we do not have to bundle the Raritan PDU Python API with this project.
 
 ## Installation
 
-    git clone git@jugit.fz-juelich.de:inm7/infrastructure/raritan_exporter.git
-    cd raritan_exporter
+    git clone git@jugit.fz-juelich.de:inm7/infrastructure/prometheus_raritan_pdu_exporter.git
+    cd prometheus_raritan_pdu_exporter
     pip install -r requirements.txt
 

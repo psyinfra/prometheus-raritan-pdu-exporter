@@ -1,5 +1,5 @@
 """
-Globals for RaritanExporter
+Globals for Prometheus Raritan PDU Exporter
 ---------------------------
 Raritan Python API version 3.6.0
 

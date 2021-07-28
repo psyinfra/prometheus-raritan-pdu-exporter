@@ -6,7 +6,7 @@ import time
 import urllib.parse
 
 from prometheus_client import start_http_server, REGISTRY
-from raritan.exporter import RaritanExporter
+from prometheus_raritan_pdu_exporter.exporter import RaritanExporter
 
 DEFAULT_PORT = 9840
 
@@ -39,7 +39,7 @@ def parse_args():
     parser.add_argument(
         '-k', '--insecure', dest='insecure', required=False, default=False,
         action='store_true',
-        help='allow a connection to an insecure raritan API')
+        help='allow a connection to an insecure Raritan API')
     return parser.parse_args()
 
 
@@ -53,7 +53,7 @@ def main():
         REGISTRY.register(RaritanExporter(
             config=args.config, threading=args.threading,
             insecure=args.insecure))
-        logger.info('listening on :%s' % listen_address.netloc)
+        logger.info('listening on %s' % listen_address.netloc)
         start_http_server(port, addr=addr)
 
         while True:

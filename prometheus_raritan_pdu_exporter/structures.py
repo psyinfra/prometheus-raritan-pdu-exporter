@@ -9,10 +9,10 @@ from requests.adapters import HTTPAdapter
 from requests.packages.urllib3.util.retry import Retry
 import requests
 
-from raritan.globals import (
+from prometheus_raritan_pdu_exporter.globals import (
     SENSORS_NUMERIC, SENSORS_STATE, SENSORS_TYPES, SENSORS_UNITS,
     SENSORS_DESCRIPTION)
-from raritan.utils import camel_to_snake
+from prometheus_raritan_pdu_exporter.utils import camel_to_snake
 
 
 # Internal logging
@@ -46,7 +46,8 @@ class PDU(object):
             the username and password combination for logging into the PDU from
             its internet address
         insecure : bool, optional
-            whether to allow an insecure connection to the raritan PDU
+            whether to allow an insecure connection to the
+            Raritan PDU
         """
         self.location = urlparse(location).netloc
         self.name = name if name is not None else self.location

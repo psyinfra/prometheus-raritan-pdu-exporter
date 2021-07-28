@@ -5,8 +5,10 @@ import json
 from prometheus_client import Summary
 from prometheus_client.core import GaugeMetricFamily, CounterMetricFamily
 
-from raritan.structures import PDU, Metric
-from raritan.globals import RARITAN_GAUGES, RARITAN_COUNTERS
+from prometheus_raritan_pdu_exporter.structures import PDU, Metric
+from prometheus_raritan_pdu_exporter.globals import (
+    RARITAN_GAUGES, RARITAN_COUNTERS)
+
 
 
 # Measure collection time
@@ -32,7 +34,7 @@ class RaritanExporter:
         request to the json-rpc API and waiting for its response takes longest,
         threading is recommended when more than 1 PDU is being monitored
     insecure : bool, optional
-        Whether to allow a connection to an insecure raritan API
+        Whether to allow a connection to an insecure Raritan API
     """
     def __init__(self, **kwargs):
         self.pdu = None
