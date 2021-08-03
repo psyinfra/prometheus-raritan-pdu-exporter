@@ -51,8 +51,6 @@ class PDU(object):
         """
         self.location = urlparse(location).netloc
         self.name = name if name is not None else self.location
-        self.uri_pdu = '/model/pdu/0'
-        self.uri_device = '/model/peripheraldevicemanager'
         self.connectors = []
         self.poles = []
         self.sensors = []
