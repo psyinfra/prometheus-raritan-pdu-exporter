@@ -10,7 +10,7 @@ calls to the json-rpc API are very straight-forward. Furthermore, only a
 handful of methods are used (`getInlets`, `getOutlets`, `getMetaData`, 
 `getDeviceSlots`, `getDevice`, `getReading` and `getState`) on the `/bulk`
 endpoint, ignoring most of the methods included in the Python API. As a result
-we do not have to bundle the Raritan PDU Python API with this project.
+we do not have to bundle the Raritan PDU Python API with this project. 
 
 ## Usage for PDU collection
 
