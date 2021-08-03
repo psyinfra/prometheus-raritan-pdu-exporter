@@ -1,4 +1,4 @@
-from typing import Optional, List
+from typing import Optional, List, Union
 from threading import Thread
 import json
 
@@ -8,7 +8,6 @@ from prometheus_client.core import GaugeMetricFamily, CounterMetricFamily
 from prometheus_raritan_pdu_exporter.structures import PDU, Metric
 from prometheus_raritan_pdu_exporter.globals import (
     RARITAN_GAUGES, RARITAN_COUNTERS)
-
 
 
 # Measure collection time
@@ -36,18 +35,26 @@ class RaritanExporter:
     insecure : bool, optional
         Whether to allow a connection to an insecure Raritan API
     """
-    def __init__(self, config: str, insecure: Optional[bool] = True):
+    def __init__(
+            self, config: Union[str, dict], insecure: Optional[bool] = True):
         self.threading = False
+
+        if isinstance(config, str):
+            config = self.load_config(config)
+
         self.pdus = self.get_pdus(config, insecure)
 
-    def get_pdus(self, config: str, insecure: Optional[bool] = True) -> list:
-        """Set up all PDUs found in the configuration file"""
+    @staticmethod
+    def load_config(config: str) -> dict:
         with open(config) as json_file:
             data = json.load(json_file)
+        return data
 
+    def get_pdus(self, config: dict, insecure: Optional[bool] = True) -> list:
+        """Set up all PDUs found in the configuration file"""
         pdus = [
             PDU(v['address'], k, (v['user'], v['password']), insecure)
-            for k, v in data.items()]
+            for k, v in config.items()]
         self.threading = True if len(pdus) > 1 else False
 
         if self.threading:
