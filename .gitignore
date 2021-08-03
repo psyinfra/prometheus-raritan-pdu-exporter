@@ -1,3 +1,6 @@
+# Test fixtures containing sensitive data
+tests/fixtures/config.json
+
 # Pycharm
 .idea
 
