@@ -2,6 +2,7 @@ from typing import Optional, Any, Union
 from urllib.parse import urljoin, urlparse, urlunparse
 import logging
 import time
+import warnings
 
 from jsonrpcclient.clients.http_client import HTTPClient
 from jsonrpcclient.requests import Request
@@ -217,23 +218,28 @@ class PDU(object):
             response = self.send(Request('performBulk', **query))
             responses = response.data.result['responses']
         except requests.exceptions.ConnectionError as exc:
-            logger.warning('(%s) Connection error' % self.name)
+            warnings.warn(f'({self.name}) Connection error')
+            logger.warning(f'({self.name}) Connection error')
             logger.debug(exc)
             self.clear_sensors()  # return None if request failed
         except requests.exceptions.Timeout as exc:
-            logger.warning('(%s) Connection timed out' % self.name)
+            warnings.warn(f'({self.name}) Connection timed out')
+            logger.warning(f'({self.name}) Connection timed out')
             logger.debug(exc)
             self.clear_sensors()
         except requests.exceptions.TooManyRedirects as exc:
-            logger.warning('(%s) Too many redirects' % self.name)
+            warnings.warn(f'({self.name}) Too many redirects')
+            logger.warning(f'({self.name}) Too many redirects')
             logger.debug(exc)
             self.clear_sensors()
         except requests.exceptions.RequestException as exc:
-            logger.warning('(%s) Unknown error occurred' % self.name)
+            warnings.warn(f'({self.name}) Unknown error occurred')
+            logger.warning(f'({self.name}) Unknown error occurred')
             logger.debug(exc)
             self.clear_sensors()
         except Exception as exc:
-            logger.warning('(%s) Unknown error occurred' % self.name)
+            warnings.warn(f'({self.name}) Unknown error occurred')
+            logger.warning(f'({self.name}) Unknown error occurred')
             logger.debug(exc)
             self.clear_sensors()
         else:
