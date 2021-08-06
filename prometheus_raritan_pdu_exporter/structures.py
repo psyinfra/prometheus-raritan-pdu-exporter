@@ -290,7 +290,7 @@ class Connector(object):
 class Pole(object):
     def __init__(
             self, label: str, line: int, node_id: int,
-            inlet: Optional[Connector] = None, parent: Optional[PDU] = None):
+            inlet: Optional[Connector], parent: Optional[PDU] = None):
         """Stores pole data.
 
         Unlike other object types, poles don't have an RID. Instead, they
