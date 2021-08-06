@@ -1,5 +1,5 @@
 from typing import Optional, Any
-from urllib.parse import urljoin, urlparse
+from urllib.parse import urljoin, urlparse, urlunparse
 import logging
 import time
 
@@ -52,15 +52,20 @@ class PDU(object):
         if auth is None:
             auth = ()
 
-        self.location = urlparse(location).netloc
-        self.name = name if name is not None else self.location
+        self.location = urlparse(location)
+
+        if not self.location.scheme:
+            self.location._replace(scheme='http')
+
+        self.name = name if name is not None else self.location.netloc
+        self.location = urlunparse(self.location)
         self.connectors = []
         self.poles = []
         self.sensors = []
 
         # HTTP Client
-        logger.info(f'({self.name}) polling at {location}')
-        client = HTTPClient(urljoin(location, '/bulk'))
+        logger.info(f'({self.name}) polling at {self.location}')
+        client = HTTPClient(urljoin(self.location, '/bulk'))
         client.session.auth = auth
         client.session.verify = not insecure
         client.session.headers.update({"Content-Type": "application/json-rpc"})
