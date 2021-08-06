@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import Optional, Any
 from urllib.parse import urljoin, urlparse
 import logging
 import time
@@ -27,7 +27,7 @@ class PDU(object):
 
     def __init__(
             self, location: str, name: Optional[str] = None,
-            auth: Optional[tuple] = (), insecure: Optional[bool] = True):
+            auth: Optional[tuple] = None, insecure: Optional[bool] = True):
         """Raritan power distribution unit (PDU) data object.
 
         Sets up a connection to the bulk json-rpc interface for Raritan PDUs
@@ -49,6 +49,9 @@ class PDU(object):
             whether to allow an insecure connection to the
             Raritan PDU
         """
+        if auth is None:
+            auth = ()
+
         self.location = urlparse(location).netloc
         self.name = name if name is not None else self.location
         self.connectors = []
@@ -263,7 +266,7 @@ class Connector(object):
         self.label = rid.rsplit('/', 1)[-1]
         self.custom_label = None
 
-    def update(self, method: str, **kwargs: dict):
+    def update(self, method: str, **kwargs: Any):
         """update the connector object with meta data"""
         if method == 'metadata':
             if kwargs.get('label', None):
@@ -342,7 +345,7 @@ class Sensor(object):
         self.value = None
         self.timestamp = None
 
-    def update(self, **kwargs: dict):
+    def update(self, **kwargs: Any):
         """Update the sensor object with meta data"""
         self.metric = SENSORS_TYPES[kwargs.get('type', {}).get('type', 0)]
         self.unit = SENSORS_UNITS[kwargs.get('type', {}).get('unit', 0)]
@@ -358,7 +361,7 @@ class Sensor(object):
 
     def set_value(
             self, value: Optional[float] = None,
-            timestamp: Optional[int] = None):
+            timestamp: Optional[int, float] = None):
         """Set the value of the sensor as obtained from a reading"""
         self.value = value
         self.timestamp = timestamp
