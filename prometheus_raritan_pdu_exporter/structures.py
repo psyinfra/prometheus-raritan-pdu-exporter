@@ -1,4 +1,4 @@
-from typing import Optional, Any
+from typing import Optional, Any, Union
 from urllib.parse import urljoin, urlparse, urlunparse
 import logging
 import time
@@ -366,7 +366,7 @@ class Sensor(object):
 
     def set_value(
             self, value: Optional[float] = None,
-            timestamp: Optional[int, float] = None):
+            timestamp: Optional[Union[int, float]] = None):
         """Set the value of the sensor as obtained from a reading"""
         self.value = value
         self.timestamp = timestamp
