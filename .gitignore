@@ -1,3 +1,6 @@
+# Ignore config.json in favor of config.json-example
+config.json
+
 # Test fixtures containing sensitive data
 tests/fixtures/config.json
 
