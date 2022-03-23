@@ -243,12 +243,22 @@ class PDU(object):
             logger.debug(exc)
             self.clear_sensors()
         else:
+            i = 0
             for resp in responses:
                 sensor_id = resp['json']['id']
                 sensor = self.sensors[int(sensor_id)]
                 value = resp['json']['result']['_ret_']['value']
                 timestamp = resp['json']['result']['_ret_']['timestamp']
                 sensor.set_value(value, timestamp)
+
+                if not sensor.value:
+                    i += 1  # return value is null
+
+            if i > 0:
+                n_values = len(responses)
+                logger.debug(
+                    f'({self.name}) Request succeeded but {i}/{n_values} are '
+                    f'empty')
 
 
 class Connector(object):
