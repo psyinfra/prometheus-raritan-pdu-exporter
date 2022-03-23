@@ -257,8 +257,8 @@ class PDU(object):
             if i > 0:
                 n_values = len(responses)
                 logger.debug(
-                    f'({self.name}) Request succeeded but {i}/{n_values} are '
-                    f'empty')
+                    f'({self.name}) Request succeeded but {i}/{n_values} '
+                    f'sensors return null-values')
 
 
 class Connector(object):
