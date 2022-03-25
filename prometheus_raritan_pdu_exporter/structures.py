@@ -1,14 +1,15 @@
+from __future__ import annotations
 from typing import Optional, Any, Union
 from urllib.parse import urljoin, urlparse, urlunparse
 import logging
 import time
-import warnings
+
+from prometheus_raritan_pdu_exporter import LogLevels
 
 from jsonrpcclient.clients.http_client import HTTPClient
 from jsonrpcclient.requests import Request
 from requests.adapters import HTTPAdapter
 from requests.packages.urllib3.util.retry import Retry
-import requests
 
 from prometheus_raritan_pdu_exporter.globals import (
     SENSORS_NUMERIC, SENSORS_STATE, SENSORS_TYPES, SENSORS_UNITS,
@@ -75,6 +76,11 @@ class PDU(object):
         client.session.mount('http://', adapter)
         client.session.mount('https://', adapter)
         self.client = client
+
+        # Debug missing sensor data
+        if LogLevels.DEBUG >= logger.level:
+            logger.debug(f'({self.name}) Initiating DebugNullSensors')
+            self.debug_null_sensors = DebugNullSensors()
 
     def send(self, request: Request, **kwargs):
         return self.client.send(request, timeout=10, **kwargs)
@@ -198,8 +204,7 @@ class PDU(object):
 
     def read_sensors(self):
         """Bulk request to read all sensors"""
-        for sensor in self.sensors:
-            sensor.set_value(None, None)
+        self.clear_sensors()
 
         query = {'requests': []}
         for sensor_id, sensor in enumerate(self.sensors):
@@ -217,33 +222,13 @@ class PDU(object):
         try:
             response = self.send(Request('performBulk', **query))
             responses = response.data.result['responses']
-        except requests.exceptions.ConnectionError as exc:
-            warnings.warn(f'({self.name}) Connection error')
-            logger.warning(f'({self.name}) Connection error')
-            logger.debug(exc)
-            self.clear_sensors()  # return None if request failed
-        except requests.exceptions.Timeout as exc:
-            warnings.warn(f'({self.name}) Connection timed out')
-            logger.warning(f'({self.name}) Connection timed out')
-            logger.debug(exc)
-            self.clear_sensors()
-        except requests.exceptions.TooManyRedirects as exc:
-            warnings.warn(f'({self.name}) Too many redirects')
-            logger.warning(f'({self.name}) Too many redirects')
-            logger.debug(exc)
-            self.clear_sensors()
-        except requests.exceptions.RequestException as exc:
-            warnings.warn(f'({self.name}) Unknown error occurred')
-            logger.warning(f'({self.name}) Unknown error occurred')
-            logger.debug(exc)
-            self.clear_sensors()
         except Exception as exc:
-            warnings.warn(f'({self.name}) Unknown error occurred')
-            logger.warning(f'({self.name}) Unknown error occurred')
-            logger.debug(exc)
-            self.clear_sensors()
+            logger.debug(f'({self.name}) RequestError: {exc}')
         else:
-            i = 0
+            if LogLevels.DEBUG >= logger.level:
+                null_sensors = DebugNullSensors()
+                null_sensors.responses = len(responses)
+
             for resp in responses:
                 sensor_id = resp['json']['id']
                 sensor = self.sensors[int(sensor_id)]
@@ -251,14 +236,31 @@ class PDU(object):
                 timestamp = resp['json']['result']['_ret_']['timestamp']
                 sensor.set_value(value, timestamp)
 
-                if not sensor.value:
-                    i += 1  # return value is null
+                if not sensor.value and LogLevels.DEBUG >= logger.level:
+                    null_sensors.add_sensor(sensor)
 
-            if i > 0:
-                n_values = len(responses)
-                logger.debug(
-                    f'({self.name}) Request succeeded but {i}/{n_values} '
-                    f'sensors return null-values')
+            if LogLevels.DEBUG >= logger.level:
+                if null_sensors.responses < self.debug_null_sensors.responses:
+                    logger.debug(
+                        f'({self.name}) API request returned fewer sensors '
+                        f'than expected. Returned {null_sensors.responses}, '
+                        f'expected {self.debug_null_sensors.responses}')
+
+                diffs = self.debug_null_sensors.diff(null_sensors)
+                if len(diffs) > 0:
+                    logger.debug(
+                        f"({self.name}) NullSensorWarning: {len(diffs)} "
+                        f"sensor{'s'[:len(diffs)^1]} returned \'None\' as "
+                        f"value ({len(null_sensors.sensors)} out of "
+                        f"{null_sensors.responses} total)")
+
+                    if LogLevels.DEEP_DEBUG >= logger.level:
+                        for diff in diffs:
+                            logger.debug(
+                                f'({self.name}) NullSensor: '
+                                f'{diff[0]}@{diff[1]}')
+
+                self.debug_null_sensors = null_sensors
 
 
 class Connector(object):
@@ -426,3 +428,21 @@ class Metric(object):
             self.description = SENSORS_DESCRIPTION[self.name]
 
         self.sensors.append(sensor)
+
+
+class DebugNullSensors:
+    def __init__(self):
+        self.sensors = []
+        self.responses = 0
+
+    def add_sensor(self, sensor: Sensor):
+        label = sensor.parent.custom_label \
+            if sensor.parent.custom_label and \
+               sensor.parent.custom_label != "''" \
+            else sensor.parent.label
+
+        self.sensors.append((label, sensor.name))
+
+    def diff(self, new: DebugNullSensors):
+        """Return entries that occur in new but not in self.sensors"""
+        return list((set(new.sensors) - set(self.sensors)))

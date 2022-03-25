@@ -1,4 +1,6 @@
 #!/usr/bin/env python3
+from prometheus_raritan_pdu_exporter import LogLevels
+
 import argparse
 import urllib3
 import logging
@@ -17,10 +19,6 @@ urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 logging.basicConfig(
     level=logging.WARNING, format='[%(asctime)s] %(levelname)s: %(message)s')
 
-# Internal logging level
-logger = logging.getLogger('prometheus_raritan_pdu_exporter')
-logger.setLevel(level=logging.DEBUG)
-
 
 def parse_args():
     parser = argparse.ArgumentParser(
@@ -36,16 +34,29 @@ def parse_args():
         '-k', '--insecure', dest='insecure', required=False, default=False,
         action='store_true',
         help='allow a connection to an insecure Raritan API')
+    parser.add_argument(
+        '-l', '--log-level', dest='log_level', required=False, type=str,
+        help='Logging level (default = warning)', default='warning')
     return parser.parse_args()
 
 
 def main():
-    try:
-        args = parse_args()
-        listen_address = urllib.parse.urlsplit(f'//{args.listen_address}')
-        addr = listen_address.hostname if listen_address.hostname else ''
-        port = listen_address.port if listen_address.port else DEFAULT_PORT
+    args = parse_args()
 
+    if args.log_level in LogLevels.all:
+        logger = logging.getLogger('prometheus_raritan_pdu_exporter')
+        logger.setLevel(level=LogLevels.all[args.log_level])
+        logger.debug(f'Current log level: {logger.level}')
+    else:
+        raise ValueError(
+            f'Unknown log-level: {args.log_level}. '
+            f'Try {*LogLevels.all.keys(),}')
+
+    listen_address = urllib.parse.urlsplit(f'//{args.listen_address}')
+    addr = listen_address.hostname if listen_address.hostname else ''
+    port = listen_address.port if listen_address.port else DEFAULT_PORT
+
+    try:
         REGISTRY.register(RaritanExporter(
             config=args.config, insecure=args.insecure))
         logger.info('listening on %s' % listen_address.netloc)

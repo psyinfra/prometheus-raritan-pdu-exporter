@@ -12,6 +12,13 @@ handful of methods are used (`getInlets`, `getOutlets`, `getMetaData`,
 endpoint, ignoring most of the methods included in the Python API. As a result
 we do not have to bundle the Raritan PDU Python API with this project. 
 
+## Installation
+```commandline
+git clone git@jugit.fz-juelich.de:inm7/infrastructure/prometheus_raritan_pdu_exporter.git
+cd prometheus_raritan_pdu_exporter
+pip install -r requirements.txt
+```
+
 ## Usage for PDU collection
 
     prometheus_raritan_pdu_exporter.py [-h] -c config [-w listen_address] [-k]
@@ -24,16 +31,15 @@ we do not have to bundle the Raritan PDU Python API with this project.
       -w listen_address, --web.listen-address listen_address
                             Address and port to listen on (default = :9840)
       -k, --insecure        allow a connection to an insecure raritan API
-
+      -l, --log-level       Logging level (default = warning)
 
 ### Example
 
-    python3 prometheus_raritan_pdu_exporter.py --web.listen-address :9840 -k
+```commandline
+python3 prometheus_raritan_pdu_exporter.py --web.listen-address :9840 -k
+```
 
-
-## Installation
-
-    git clone git@jugit.fz-juelich.de:inm7/infrastructure/prometheus_raritan_pdu_exporter.git
-    cd prometheus_raritan_pdu_exporter
-    pip install -r requirements.txt
-
+### Debugging
+To enable debugging, set `-l debug` to log debug messages or `-l deep-debug` 
+to log very verbose debug messages. Valid log levels are: `critical`, `error`,
+`warning`, `info`, `debug`, `deep-debug`.
