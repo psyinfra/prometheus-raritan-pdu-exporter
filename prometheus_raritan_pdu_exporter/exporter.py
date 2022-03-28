@@ -5,9 +5,8 @@ import json
 from prometheus_client import Summary
 from prometheus_client.core import GaugeMetricFamily, CounterMetricFamily
 
-from prometheus_raritan_pdu_exporter.structures import PDU, Metric
-from prometheus_raritan_pdu_exporter.globals import (
-    RARITAN_GAUGES, RARITAN_COUNTERS)
+from .structures import PDU, Metric
+from .globals import RARITAN_GAUGES, RARITAN_COUNTERS
 
 
 # Measure collection time
@@ -121,36 +120,26 @@ class RaritanExporter:
                     metric.name, metric.description, labels=labels)
 
                 for sensor in metric.sensors:
-                    if sensor.value is None:
+                    if PDU.is_null(sensor):
                         continue
 
-                    label = sensor.parent.custom_label \
-                        if sensor.parent.custom_label and \
-                           sensor.parent.custom_label != "''" \
-                        else sensor.parent.label
-
                     g.add_metric([
-                        sensor.parent.parent.location, label,
-                        sensor.parent.type, sensor.parent.label],
-                        sensor.value)
+                        sensor.parent.parent.location,
+                        sensor.parent.custom_label, sensor.parent.type,
+                        sensor.parent.label], sensor.value)
 
             elif metric.interface in RARITAN_COUNTERS:
                 g = CounterMetricFamily(
                     metric.name, metric.description, labels=labels)
 
                 for sensor in metric.sensors:
-                    if sensor.value is None:
+                    if PDU.is_null(sensor):
                         continue
 
-                    if sensor.parent.custom_label:
-                        label = sensor.parent.custom_label
-                    else:
-                        label = sensor.parent.label
-
                     g.add_metric([
-                        sensor.parent.parent.location, label,
-                        sensor.parent.type, sensor.parent.label],
-                        sensor.value)
+                        sensor.parent.parent.location,
+                        sensor.parent.custom_label, sensor.parent.type,
+                        sensor.parent.label], sensor.value)
 
             else:  # interface cannot be collected (i.e., state sensors)
                 continue

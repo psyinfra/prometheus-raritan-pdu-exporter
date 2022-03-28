@@ -1,21 +1,13 @@
+import urllib3
 import logging
 
+DEFAULT_PORT = 9840
 
-class LogLevels(object):
-    CRITICAL = logging.CRITICAL
-    ERROR = logging.ERROR
-    WARNING = logging.WARNING
-    INFO = logging.INFO
-    DEBUG = logging.DEBUG
-    DEEP_DEBUG = 5
+# Raritan PDU has no SSL certificate, ignore the ensuing warning
+urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
-    all = {
-        'critical': CRITICAL,
-        'error': ERROR,
-        'warning': WARNING,
-        'info': INFO,
-        'debug': DEBUG,
-        'deep-debug': DEEP_DEBUG}
+# External (root level) logging level
+logging.basicConfig(
+    level=logging.WARNING, format='[%(asctime)s] %(levelname)s: %(message)s')
 
-
-__all__ = [LogLevels]
+__all__ = [DEFAULT_PORT]

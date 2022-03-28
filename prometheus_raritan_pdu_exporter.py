@@ -1,23 +1,13 @@
 #!/usr/bin/env python3
-from prometheus_raritan_pdu_exporter import LogLevels
-
 import argparse
-import urllib3
 import logging
 import time
 import urllib.parse
 
 from prometheus_client import start_http_server, REGISTRY
+
+from prometheus_raritan_pdu_exporter import DEFAULT_PORT
 from prometheus_raritan_pdu_exporter.exporter import RaritanExporter
-
-DEFAULT_PORT = 9840
-
-# Raritan PDU has no SSL certificate, ignore the ensuing warning
-urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
-
-# External (root level) logging level
-logging.basicConfig(
-    level=logging.WARNING, format='[%(asctime)s] %(levelname)s: %(message)s')
 
 
 def parse_args():
@@ -36,21 +26,25 @@ def parse_args():
         help='allow a connection to an insecure Raritan API')
     parser.add_argument(
         '-l', '--log-level', dest='log_level', required=False, type=str,
-        help='Logging level (default = warning)', default='warning')
+        help='Logging level (default = WARNING)', default='WARNING')
     return parser.parse_args()
 
 
 def main():
     args = parse_args()
+    level_names = [
+        logging.getLevelName(i) for i in range(1, 101)
+        if not logging.getLevelName(i).startswith('Level')]
+    log_level = args.log_level.upper()
 
-    if args.log_level in LogLevels.all:
+    if log_level in level_names:
         logger = logging.getLogger('prometheus_raritan_pdu_exporter')
-        logger.setLevel(level=LogLevels.all[args.log_level])
-        logger.debug(f'Current log level: {logger.level}')
+        logger.setLevel(level=log_level)
+        logger.info(
+            f'Current log level: {logging.getLevelName(logger.level)}')
     else:
         raise ValueError(
-            f'Unknown log-level: {args.log_level}. '
-            f'Try {*LogLevels.all.keys(),}')
+            f'Unknown log-level: \'{log_level}\' try using {*level_names,}')
 
     listen_address = urllib.parse.urlsplit(f'//{args.listen_address}')
     addr = listen_address.hostname if listen_address.hostname else ''
@@ -69,7 +63,7 @@ def main():
         logger.error(exc)
 
     except KeyboardInterrupt:
-        logger.info('interrupted by user')
+        logger.info('KeyboardInterrupt: interrupted by user')
         exit(0)
 
 
