@@ -3,19 +3,16 @@ from typing import Optional, Any, Union
 from urllib.parse import urljoin, urlparse, urlunparse
 import logging
 import time
-
-from prometheus_raritan_pdu_exporter import LogLevels
+import re
 
 from jsonrpcclient.clients.http_client import HTTPClient
 from jsonrpcclient.requests import Request
 from requests.adapters import HTTPAdapter
 from requests.packages.urllib3.util.retry import Retry
 
-from prometheus_raritan_pdu_exporter.globals import (
+from .globals import (
     SENSORS_NUMERIC, SENSORS_STATE, SENSORS_TYPES, SENSORS_UNITS,
     SENSORS_DESCRIPTION)
-from prometheus_raritan_pdu_exporter.utils import camel_to_snake
-
 
 # Internal logging
 logger = logging.getLogger('prometheus_raritan_pdu_exporter')
@@ -78,12 +75,28 @@ class PDU(object):
         self.client = client
 
         # Debug missing sensor data
-        if LogLevels.DEBUG >= logger.level:
-            logger.debug(f'({self.name}) Initiating DebugNullSensors')
+        if logging.DEBUG >= logger.level:
             self.debug_null_sensors = DebugNullSensors()
 
+    def __str__(self):
+        n_inlets = len([c for c in self.connectors if c.type == 'inlet'])
+        n_outlets = len([c for c in self.connectors if c.type == 'outlet'])
+        n_devices = len([c for c in self.connectors if c.type == 'device'])
+        n_poles = len(self.poles)
+        n_sensors = len(self.sensors)
+
+        return f'PDU(name={self.name}, location={self.location}, ' \
+               f'connectors=(n_inlets={n_inlets}, n_outlets={n_outlets}, ' \
+               f'n_devices={n_devices}), n_poles={n_poles}, ' \
+               f'n_sensors={n_sensors})'
+
     def send(self, request: Request, **kwargs):
-        return self.client.send(request, timeout=10, **kwargs)
+        response = self.client.send(request, timeout=10, **kwargs)
+        logger.debug(
+            f"({self.name}) /PerformBulk with "
+            f"{len(request['params']['requests'])} requests received "
+            f"{len(response.data.result['responses'])} response(s)")
+        return response
 
     def bulk(self, reqs: list, **kwargs):
         return self.client.send(
@@ -94,16 +107,14 @@ class PDU(object):
         self._get_connectors()
         self._get_poles()
         self._get_sensors()
+        logger.info(self)
 
-        n_inlets = len([c for c in self.connectors if c.type == 'inlet'])
-        n_outlets = len([c for c in self.connectors if c.type == 'outlet'])
-        n_devices = len([c for c in self.connectors if c.type == 'device'])
-        n_poles = len(self.poles)
-        n_sensors = len(self.sensors)
-        logger.info(
-            '(%s) %s inlet(s), %s outlet(s), %s pole(s) and %s device(s) with '
-            'a total of %s sensor(s) found'
-            % (self.name, n_inlets, n_outlets, n_poles, n_devices, n_sensors))
+    @staticmethod
+    def is_null(sensor: Sensor) -> bool:
+        """Returns True if a Raritan API sensor return value is empty"""
+        return False \
+            if isinstance(sensor.value, (int, float)) or \
+               sensor.value is not None else True
 
     def _get_connectors(self):
         """Find all connectors and retrieve all associated meta-data"""
@@ -199,6 +210,7 @@ class PDU(object):
                 r['json']['id']].update(**r['json']['result']['_ret_'])
 
     def clear_sensors(self):
+        logger.debug(f'({self.name}) clearing sensor values')
         for sensor in self.sensors:
             sensor.set_value(None, timestamp=time.time())
 
@@ -223,9 +235,9 @@ class PDU(object):
             response = self.send(Request('performBulk', **query))
             responses = response.data.result['responses']
         except Exception as exc:
-            logger.debug(f'({self.name}) RequestError: {exc}')
+            logger.warning(f'({self.name}) RequestError: {exc}')
         else:
-            if LogLevels.DEBUG >= logger.level:
+            if logging.DEBUG >= logger.level:
                 null_sensors = DebugNullSensors()
                 null_sensors.responses = len(responses)
 
@@ -236,10 +248,10 @@ class PDU(object):
                 timestamp = resp['json']['result']['_ret_']['timestamp']
                 sensor.set_value(value, timestamp)
 
-                if not sensor.value and LogLevels.DEBUG >= logger.level:
+                if self.is_null(sensor) and logging.DEBUG >= logger.level:
                     null_sensors.add_sensor(sensor)
 
-            if LogLevels.DEBUG >= logger.level:
+            if logging.DEBUG >= logger.level:
                 if null_sensors.responses < self.debug_null_sensors.responses:
                     logger.debug(
                         f'({self.name}) API request returned fewer sensors '
@@ -254,11 +266,10 @@ class PDU(object):
                         f"value ({len(null_sensors.sensors)} out of "
                         f"{null_sensors.responses} total)")
 
-                    if LogLevels.DEEP_DEBUG >= logger.level:
-                        for diff in diffs:
-                            logger.debug(
-                                f'({self.name}) NullSensor: '
-                                f'{diff[0]}@{diff[1]}')
+                    for diff in diffs:
+                        logger.debug(
+                            f'({self.name}) NullSensor: '
+                            f'{diff[0]}@{diff[1]} = {diff[2]}')
 
                 self.debug_null_sensors = null_sensors
 
@@ -287,12 +298,15 @@ class Connector(object):
         self.parent = parent
         self.socket = None  # 'plug' or 'receptacle'
         self.label = rid.rsplit('/', 1)[-1]
-        self.custom_label = None
+        self.custom_label = self.label
 
     def update(self, method: str, **kwargs: Any):
         """update the connector object with meta data"""
         if method == 'metadata':
             if kwargs.get('label', None):
+                if self.custom_label == self.label:
+                    self.custom_label = kwargs['label']
+
                 self.label = kwargs['label']
 
             if self.type == 'outlet':
@@ -301,7 +315,8 @@ class Connector(object):
                 self.socket = kwargs.get('plugType', None)
 
         elif method == 'settings':
-            if kwargs.get('name', None):
+            custom_label = kwargs.get('name', None)
+            if custom_label and custom_label != "''":
                 self.custom_label = kwargs['name']
 
 
@@ -323,7 +338,7 @@ class Pole(object):
         """
         self.type = 'pole'
         self.label = inlet.label
-        self.custom_label = label if label else f'L{line+1}'
+        self.custom_label = label if label and label != "''" else f'L{line+1}'
         self.line = line
         self.node_id = node_id
         self.inlet = inlet
@@ -368,6 +383,13 @@ class Sensor(object):
         self.value = None
         self.timestamp = None
 
+    @staticmethod
+    def camel_to_snake(label: str) -> str:
+        """Convert camelCase strings to snake_case"""
+        label = re.sub('(.)([A-Z][a-z]+)', r'\1_\2', label)
+        label = re.sub('([a-z0-9])([A-Z])', r'\1_\2', label).lower()
+        return label
+
     def update(self, **kwargs: Any):
         """Update the sensor object with meta data"""
         self.metric = SENSORS_TYPES[kwargs.get('type', {}).get('type', 0)]
@@ -376,11 +398,11 @@ class Sensor(object):
         if self.name is None:
             self.name = self.metric
 
-        self.longname = 'raritan_sensors_%s' % camel_to_snake(self.name)
+        self.longname = f'raritan_sensors_{self.camel_to_snake(self.name)}'
 
         if self.unit not in (None, 'none'):
-            self.longname = '%s_in_%s' % (
-                self.longname, camel_to_snake(self.unit))
+            self.longname = \
+                f'{self.longname}_in_{self.camel_to_snake(self.unit)}'
 
     def set_value(
             self, value: Optional[float] = None,
@@ -436,12 +458,7 @@ class DebugNullSensors:
         self.responses = 0
 
     def add_sensor(self, sensor: Sensor):
-        label = sensor.parent.custom_label \
-            if sensor.parent.custom_label and \
-               sensor.parent.custom_label != "''" \
-            else sensor.parent.label
-
-        self.sensors.append((label, sensor.name))
+        self.sensors.append((sensor.parent.label, sensor.name, sensor.value))
 
     def diff(self, new: DebugNullSensors):
         """Return entries that occur in new but not in self.sensors"""
