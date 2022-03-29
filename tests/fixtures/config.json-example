@@ -1,0 +1,22 @@
+{
+    "pdublue.rack0": {
+        "address": "https://pdublue.rack0.htc.inm7.de",
+        "user": "admin",
+        "password": "xxxxx"
+    },
+    "pdured.rack0": {
+        "address": "https://pdured.rack0.htc.inm7.de",
+        "user": "admin",
+        "password": "xxxxx"
+    },
+    "pdublue.rack1": {
+        "address": "https://pdublue.rack1.htc.inm7.de",
+        "user": "admin",
+        "password": "xxxxx"
+    },
+    "pdured.rack1": {
+        "address": "https://pdured.rack1.htc.inm7.de",
+        "user": "admin",
+        "password": "xxxxx"
+    }
+}

@@ -43,3 +43,23 @@ python3 prometheus_raritan_pdu_exporter.py --web.listen-address :9840 -k
 To enable debugging, set `-l debug` to log debug messages. Note that this will 
 provide a lot of additional information and is therefore not a recommended 
 setting for long-term use in production.
+
+## Testing
+Install test requirements using:
+
+```commandline
+pip3 install -r test-requirements.txt
+```
+
+Run tests by executing the following in the package root directory:
+
+```commandline
+pytest tests
+```
+
+### Test Requirements
+The tests use `vcrpy`, and can hence be run using recorded data rather than 
+live data. To re-establish the recorded data, remove the 
+`tests/fixtures/vcr_cassettes/` folder and its contents. Make sure to include 
+a `tests/fixtures/config.json` that, unlike the `config.json-example` file has 
+real login credentials for the Raritan PDUs to be tested.
