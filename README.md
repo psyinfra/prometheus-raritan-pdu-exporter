@@ -40,6 +40,6 @@ python3 prometheus_raritan_pdu_exporter.py --web.listen-address :9840 -k
 ```
 
 ### Debugging
-To enable debugging, set `-l debug` to log debug messages or `-l deep-debug` 
-to log very verbose debug messages. Valid log levels are: `critical`, `error`,
-`warning`, `info`, `debug`, `deep-debug`.
+To enable debugging, set `-l debug` to log debug messages. Note that this will 
+provide a lot of additional information and is therefore not a recommended 
+setting for long-term use in production.
