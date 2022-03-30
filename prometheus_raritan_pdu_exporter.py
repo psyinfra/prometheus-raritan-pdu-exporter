@@ -62,9 +62,15 @@ def main():
     except BrokenPipeError as exc:
         logger.error(exc)
 
+    except ConnectionError as exc:
+        logger.error(exc)
+
     except KeyboardInterrupt:
         logger.info('KeyboardInterrupt: interrupted by user')
         exit(0)
+
+    except Exception as exc:
+        logger.debug(exc)
 
 
 if __name__ == '__main__':
