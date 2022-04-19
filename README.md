@@ -1,12 +1,11 @@
 # Prometheus Raritan PDU Exporter
 Python-based Raritan PDU exporter for [prometheus.io](https://prometheus.io/).
 
-This exporter uses the Raritan json-rpc API to find inlet sensors, outlet
-sensors, and devices to expose their readings to the Prometheus monitoring
-system.
+This exporter uses the Raritan JSON-RPC API to find inlet, outlet, pole, and 
+device sensors to expose their readings to the Prometheus monitoring system.
 
 We have purposely opted not to use the Raritan PDU Python API since direct
-calls to the json-rpc API are very straight-forward. Furthermore, only a
+calls to the JSON-RPC API are very straight-forward. Furthermore, only a
 handful of methods are used (`getInlets`, `getOutlets`, `getMetaData`, 
 `getDeviceSlots`, `getDevice`, `getReading` and `getState`) on the `/bulk`
 endpoint, ignoring most of the methods included in the Python API. As a result

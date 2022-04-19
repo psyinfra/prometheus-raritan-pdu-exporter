@@ -21,9 +21,9 @@ def parse_args():
         type=str, help='Address and port to listen on (default = :9840)',
         default=f':{DEFAULT_PORT}')
     parser.add_argument(
-        '-k', '--insecure', dest='insecure', required=False, default=False,
+        '-s', '--ssl', dest='ssl', required=False, default=False,
         action='store_true',
-        help='allow a connection to an insecure Raritan API')
+        help='Only allow a connection to a secure Raritan API')
     parser.add_argument(
         '-l', '--log-level', dest='log_level', required=False, type=str,
         help='Logging level (default = WARNING)', default='WARNING')
@@ -47,30 +47,19 @@ def main():
             f'Unknown log-level: \'{log_level}\' try using {*level_names,}')
 
     listen_address = urllib.parse.urlsplit(f'//{args.listen_address}')
-    addr = listen_address.hostname if listen_address.hostname else ''
+    addr = listen_address.hostname if listen_address.hostname else '0.0.0.0'
     port = listen_address.port if listen_address.port else DEFAULT_PORT
 
-    try:
-        REGISTRY.register(RaritanExporter(
-            config=args.config, insecure=args.insecure))
-        logger.info('listening on %s' % listen_address.netloc)
-        start_http_server(port, addr=addr)
+    REGISTRY.register(RaritanExporter(config=args.config))
+    start_http_server(port, addr=addr)
+    logger.info('listening on %s' % listen_address.netloc)
 
+    try:
         while True:
             time.sleep(1)
-
-    except BrokenPipeError as exc:
-        logger.error(exc)
-
-    except ConnectionError as exc:
-        logger.error(exc)
-
     except KeyboardInterrupt:
-        logger.info('KeyboardInterrupt: interrupted by user')
+        logger.info('Interrupted by user')
         exit(0)
-
-    except Exception as exc:
-        logger.debug(exc)
 
 
 if __name__ == '__main__':
