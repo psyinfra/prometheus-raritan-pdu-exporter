@@ -1,22 +1,38 @@
 {
     "pdublue.rack0": {
-        "address": "https://pdublue.rack0.htc.inm7.de",
+        "url": "https://pdublue.rack0.htc.inm7.de",
         "user": "admin",
-        "password": "xxxxx"
+        "password": "xxxxx",
+        "ssl": false
     },
     "pdured.rack0": {
-        "address": "https://pdured.rack0.htc.inm7.de",
+        "url": "https://pdured.rack0.htc.inm7.de",
         "user": "admin",
-        "password": "xxxxx"
+        "password": "xxxxx",
+        "ssl": false
     },
     "pdublue.rack1": {
-        "address": "https://pdublue.rack1.htc.inm7.de",
+        "url": "https://pdublue.rack1.htc.inm7.de",
         "user": "admin",
-        "password": "xxxxx"
+        "password": "xxxxx",
+        "ssl": false
     },
     "pdured.rack1": {
-        "address": "https://pdured.rack1.htc.inm7.de",
+        "url": "https://pdured.rack1.htc.inm7.de",
         "user": "admin",
-        "password": "xxxxx"
+        "password": "xxxxx",
+        "ssl": false
+    },
+    "pdublue.rack2": {
+        "url": "https://pdublue.rack2.htc.inm7.de",
+        "user": "admin",
+        "password": "xxxxx",
+        "ssl": false
+    },
+    "pdured.rack2": {
+        "url": "https://pdured.rack2.htc.inm7.de",
+        "user": "admin",
+        "password": "xxxxx",
+        "ssl": false
     }
 }

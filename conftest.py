@@ -1,7 +1,19 @@
-import os
+from dataclasses import dataclass, field
+from typing import Optional
 import json
+import os
 
 import pytest
+
+
+@dataclass
+class RaritanConfig:
+    file: str
+    name: str
+    url: str
+    user: str
+    password: str
+    ssl: Optional[bool] = field(default=False)
 
 
 @pytest.fixture(scope='module')
@@ -20,11 +32,8 @@ def raritan_conf():
     with open(raritan_config_file) as json_file:
         config = json.load(json_file)
 
-    pdu_name = list(config.keys())[0]
-    pdu_address = config[pdu_name]['address']
-    pdu_user = config[pdu_name]['user']
-    pdu_password = config[pdu_name]['password']
-
-    return {
-        'config_file': raritan_config_file, 'name': pdu_name,
-        'address': pdu_address, 'user': pdu_user, 'pass': pdu_password}
+    key = list(config.keys())[0]
+    return RaritanConfig(
+        file=raritan_config_file, name=key, url=config[key]['url'],
+        user=config[key]['user'], password=config[key]['password'],
+        ssl=config[key]['ssl'])

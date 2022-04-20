@@ -18,15 +18,14 @@ def parse_args():
         help='configuration json file containing PDU addresses and login info')
     parser.add_argument(
         '-w', '--web.listen-address', dest='listen_address', required=False,
-        type=str, help='Address and port to listen on (default = :9840)',
+        type=str,
+        help=f'Address and port to listen on (default = :{DEFAULT_PORT})',
         default=f':{DEFAULT_PORT}')
     parser.add_argument(
-        '-k', '--insecure', dest='insecure', required=False, default=False,
-        action='store_true',
-        help='allow a connection to an insecure Raritan API')
-    parser.add_argument(
-        '-l', '--log-level', dest='log_level', required=False, type=str,
-        help='Logging level (default = WARNING)', default='WARNING')
+        '-l', '--log', dest='log_level', nargs='+', required=False,
+        type=str, default=['WARNING', 'CRITICAL'],
+        help='Specify logging level for internal and external logging, '
+             'respectively (Default is WARNING,CRITICAL)')
     return parser.parse_args()
 
 
@@ -35,36 +34,69 @@ def main():
     level_names = [
         logging.getLevelName(i) for i in range(1, 101)
         if not logging.getLevelName(i).startswith('Level')]
-    log_level = args.log_level.upper()
+    log_level = [log.upper() for log in args.log_level]
 
-    if log_level in level_names:
-        logger = logging.getLogger('prometheus_raritan_pdu_exporter')
-        logger.setLevel(level=log_level)
-        logger.info(
-            f'Current log level: {logging.getLevelName(logger.level)}')
+    if len(log_level) == 1:
+        log_level = log_level[0].split(',')  # adjust for , list separation
+
+    if len(log_level) == 1:
+        log_level.append('CRITICAL')
+    elif len(log_level) > 2:
+        raise SystemExit(
+            f'{len(log_level)} log levels given, but 2 is the maximum')
+
+    internal_log_level, external_log_level = log_level
+    if external_log_level in level_names:
+        logging.basicConfig(
+            level=external_log_level,
+            format='[%(asctime)s] %(levelname)s: %(message)s')
     else:
-        raise ValueError(
-            f'Unknown log-level: \'{log_level}\' try using {*level_names,}')
+        raise SystemExit(
+            f'Unknown log-level: \'{external_log_level}\' try using '
+            f'{*level_names,}')
+
+    if internal_log_level in level_names:
+        logger = logging.getLogger('prometheus_raritan_pdu_exporter')
+        logger.setLevel(level=internal_log_level)
+    else:
+        raise SystemExit(
+            f'Unknown log-level: \'{internal_log_level}\' try using '
+            f'{*level_names,}')
+
+    logger.info(f'Internal log level: {logging.getLevelName(logger.level)}')
+    logger.info(
+        f'External log level: {logging.getLevelName(logging.root.level)}')
 
     listen_address = urllib.parse.urlsplit(f'//{args.listen_address}')
-    addr = listen_address.hostname if listen_address.hostname else ''
+    addr = listen_address.hostname if listen_address.hostname else '0.0.0.0'
     port = listen_address.port if listen_address.port else DEFAULT_PORT
 
     try:
-        REGISTRY.register(RaritanExporter(
-            config=args.config, insecure=args.insecure))
-        logger.info('listening on %s' % listen_address.netloc)
+        REGISTRY.register(RaritanExporter(config=args.config))
         start_http_server(port, addr=addr)
+        logger.info('listening on %s' % listen_address.netloc)
+    except KeyboardInterrupt:
+        logger.info('Interrupted by user')
+        exit(0)
+    except Exception as exc:
+        logger.error(exc)
+        logger.critical(
+            'Exporter shut down due to an error during the setup procedure. '
+            'Please contact your administrator.')
+        exit(1)
 
+    try:
         while True:
             time.sleep(1)
-
-    except BrokenPipeError as exc:
-        logger.error(exc)
-
     except KeyboardInterrupt:
-        logger.info('KeyboardInterrupt: interrupted by user')
+        logger.info('Interrupted by user')
         exit(0)
+    except Exception as exc:
+        logger.error(exc)
+        logger.critical(
+            'Exporter shut down unexpectedly. Please contact your '
+            'administrator.')
+        exit(1)
 
 
 if __name__ == '__main__':
