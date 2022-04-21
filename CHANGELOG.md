@@ -4,21 +4,27 @@
 
 Released on April 19th, 2022
 
+### Breaking Changes
+  * Move SSL verification from argument to configuration file, allowing SSL verification to be PDU specific
+    * Remove `--insecure` from arguments
+    * Add `ssl` key to PDU configuration file
+      * `False` skips verification
+      * `True` uses default verification
+  * Change metric naming scheme from `raritan_sensors_<metric>_in_<unit>` to `raritan_pdu_<metric>_<unit>`
+  * Change default listen port from `9840` to `9950` to match the [allocated default port](https://github.com/prometheus/prometheus/wiki/Default-port-allocations) for the Raritan PDU Exporter
+
 ### Added
   * Expand logging for debug mode
-  * Add `aiohttp` and `asyncio` dependencies for asynchronous JSON-RPC requests
+  * Add `aiohttp` dependency for asynchronous JSON-RPC requests
   * Custom JSON-RPC handlers for the Raritan PDU's interpretation of the standard
   * Dataclass interfaces for Raritan objects (e.g., connectors, sensors, poles, etc.)
     * Interfaces are frozen to prevent runtime modification
 
 ### Changed
-  * Replace threading with async for PDU sensor setup
-  * Replace threading with async for PDU sensor reading
-  * Fix overlapping requests clearing sensor data
-  * Specify SSL verification in config file
-    * False skips verification
-    * True uses default verification
-    * A string filepath of a SHA256 digest
+  * Bug fix: concurrent requests to the exporter will no longer conflict and result in truncated responses
+  * Bug fix: all responses should now always include all sensors; sensors with a value of 0.0 are no longer omitted from responses
+  * Bug fix: sensors with deleted custom labels now use their default identifiers rather than `''`
+  * Replace threading with async for PDU sensor setup and readings
   * Refactor code for brevity and clarity
   * Separate bulk request steps into multiple methods for easier debugging
   * Adjust existing tests to match refactoring
@@ -29,7 +35,6 @@ Released on April 19th, 2022
 
 ### Removed
   * `jsonrpcclient` and `requests` module dependencies
-  * Remove `-s`, `--ssl` from arguments
 
 
 ## v1.0.6
