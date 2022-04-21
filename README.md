@@ -1,8 +1,8 @@
-![Maintainer](https://img.shields.io/badge/maintainer-nhjjreuter-blue)
+![Maintainer](https://img.shields.io/badge/maintainer-nhjjr-blue)
 ![GitHub](https://img.shields.io/github/license/psyinfra/prometheus-raritan-pdu-exporter)
-![Build Status](https://github.com/psyinfra/prometheus-raritan-pdu-exporter/actions/workflows/tests.yaml/badge.svg)
+![Build Status](https://github.com/psyinfra/prometheus-raritan-pdu-exporter/actions/workflows/tests.yml/badge.svg)
 ![GitHub tag (latest by date)](https://img.shields.io/github/v/tag/psyinfra/prometheus-raritan-pdu-exporter?label=version)
-![Python Version](https://img.shields.io/badge/python-v3.6+-blue)
+![Python Version](https://img.shields.io/badge/python-v3.7+-blue)
 
 # Prometheus Raritan PDU Exporter
 Python-based Raritan PDU exporter for [prometheus.io](https://prometheus.io/).
@@ -21,7 +21,7 @@ we do not have to bundle the Raritan PDU Python API with this project.
 ```commandline
 git clone git@jugit.fz-juelich.de:inm7/infrastructure/prometheus_raritan_pdu_exporter.git
 cd prometheus_raritan_pdu_exporter
-pip install -r requirements.txt
+pip install .
 ```
 
 ## Usage for PDU collection
@@ -51,21 +51,18 @@ provide a lot of additional information and is therefore not a recommended
 setting for long-term use in production.
 
 ## Testing
-Install test requirements using:
+Run tests using `tox`
 
 ```commandline
-pip3 install -r test-requirements.txt
+pip3 install tox
+tox
 ```
 
-Run tests by executing the following in the package root directory:
-
-```commandline
-pytest tests
-```
-
-### Test Requirements
-The tests use `vcrpy`, and can hence be run using recorded data rather than 
-live data. To re-establish the recorded data, remove the 
-`tests/fixtures/vcr_cassettes/` folder and its contents. Make sure to include 
-a `tests/fixtures/config.json` that, unlike the `config.json-example` file has 
-real login credentials for the Raritan PDUs to be tested.
+### Testing without VCR cassettes
+Our tests use `vcrpy` to record responses from the Raritan PDU JSON-RPC API, 
+because access to this data is not guaranteed. If you want to test the 
+Raritan PDU Exporter on your PDU setup, copy your `config.json` file to 
+`tests/fixtures/config.json` and remove the `tests/fixtures/vcr_cassettes/` 
+folder and its contents. Tests can then be run as usual, but will take 
+longer as PDUs are requested for data to re-establish the VCR cassettes with 
+data from the PDUs in the config file.

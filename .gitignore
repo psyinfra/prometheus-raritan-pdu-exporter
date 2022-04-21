@@ -5,8 +5,11 @@ tests/fixtures/config.json
 # Other
 .idea
 .venv
-__pycache__/
-log
+__pycache__
 .pytest_cache
-htmlcov/
 .coverage
+*.pyc
+*.egg-info
+.eggs
+dist/
+.tox

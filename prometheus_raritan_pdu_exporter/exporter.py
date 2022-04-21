@@ -27,22 +27,17 @@ class RaritanExporter:
         self.pdus = [PDU(
             url=v['url'], user=v['user'], password=v['password'],
             ssl=v['ssl'], name=k) for k, v in data.items()]
+        asyncio.run(self._setup())
 
-        asyncio.set_event_loop(asyncio.new_event_loop())
-        loop = asyncio.get_event_loop()
-        data = asyncio.gather(*[pdu.setup() for pdu in self.pdus])
-        loop.run_until_complete(data)
-        loop.close()
+    async def _setup(self):
+        await asyncio.gather(*[pdu.setup() for pdu in self.pdus])
+
+    async def _read(self, collect_id: str = '-'):
+        return await asyncio.gather(
+            *[pdu.read(collect_id=collect_id) for pdu in self.pdus])
 
     def read(self, collect_id: str = '-') -> List[MetricFamily]:
-        asyncio.set_event_loop(asyncio.new_event_loop())
-        loop = asyncio.get_event_loop()
-        readings = asyncio.gather(
-            *[pdu.read(collect_id=collect_id) for pdu in self.pdus])
-        pdus = loop.run_until_complete(readings)
-        loop.close()
-
-        # flatten list
+        pdus = asyncio.run(self._read())
         metrics = [metric for metrics in pdus for metric in metrics]
 
         # group metrics by family

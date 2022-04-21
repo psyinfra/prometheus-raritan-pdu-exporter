@@ -1,12 +1,14 @@
 {
     "pdu1_name": {
-        "address": "https://address.to.pdu",
+        "url": "https://address.to.pdu",
         "user": "username",
-        "password": "password"
+        "password": "password",
+        "ssl": false
     },
     "pdu2_name": {
-        "address": "https://address.to.pdu",
+        "url": "https://address.to.pdu",
         "user": "username",
-        "password": "password"
+        "password": "password",
+        "ssl": false
     }
 }

@@ -1,5 +1,27 @@
 # Change Log
 
+## v2.0.1
+
+Released on April 21st, 2022
+
+### Added
+  * Testing with tox using `tox.ini`
+  * Add `pyproject.toml`, `setup.cfg`, and `setup.py` for easier packaging
+  * Add `ssl` field to `config.json-example`
+
+### Changed
+  * Avoid event loops in Exporter setup and read methods to address asyncio `DeprecationWarning` in py310
+  * Change minimum Python version in badges from 3.6+ to 3.7+
+  * Update installation instructions in `README.md`
+  * Update usage instructions in `README.md`
+  * Update testing instructions in `README.md`
+  * Expand `.gitignore`
+  * Change `LICENSE` to `LICENSE.txt`
+  * Adjust github tests workflow to use tox
+
+### Removed
+  * `requirements.txt` and `test-requirements.txt` in favor of `setup.py` and `tox.ini`
+
 ## v2.0.0
 
 Released on April 19th, 2022
