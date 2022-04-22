@@ -8,7 +8,7 @@ from prometheus_client.core import Metric as PromMetric
 
 
 @vcr.use_cassette(
-    'tests/fixtures/vcr_cassettes/exporter_init.yaml',
+    'tests/fixtures/vcr_cassettes/data.yaml',
     filter_headers=['authorization'])
 def test_raritan_exporter_init(raritan_conf):
     exporter = RaritanExporter(config=raritan_conf.file)
@@ -43,7 +43,7 @@ def test_raritan_exporter_init(raritan_conf):
 
 
 @vcr.use_cassette(
-    'tests/fixtures/vcr_cassettes/exporter_read.yaml',
+    'tests/fixtures/vcr_cassettes/data.yaml',
     filter_headers=['authorization'])
 def test_raritan_exporter_read(raritan_conf):
     exporter = RaritanExporter(config=raritan_conf.file)
@@ -71,7 +71,7 @@ def test_raritan_exporter_read(raritan_conf):
 
 
 @vcr.use_cassette(
-    'tests/fixtures/vcr_cassettes/exporter_read.yaml',
+    'tests/fixtures/vcr_cassettes/data.yaml',
     filter_headers=['authorization'])
 def test_raritan_exporter_collect(raritan_conf):
     exporter = RaritanExporter(config=raritan_conf.file)

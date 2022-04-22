@@ -34,7 +34,7 @@ def test_empty_response_connector_rids(
 
 
 @vcr.use_cassette(
-    'tests/fixtures/vcr_cassettes/interface_setup.yaml',
+    'tests/fixtures/vcr_cassettes/data.yaml',
     filter_headers=['authorization'])
 def test_empty_response_connector_metadata(
         raritan_conf, test_exception, monkeypatch):
@@ -56,7 +56,7 @@ def test_empty_response_connector_metadata(
 
 
 @vcr.use_cassette(
-    'tests/fixtures/vcr_cassettes/interface_setup.yaml',
+    'tests/fixtures/vcr_cassettes/data.yaml',
     filter_headers=['authorization'])
 def test_empty_response_connector_settings(
         raritan_conf, test_exception, monkeypatch):
@@ -79,7 +79,7 @@ def test_empty_response_connector_settings(
 
 
 @vcr.use_cassette(
-    'tests/fixtures/vcr_cassettes/interface_setup.yaml',
+    'tests/fixtures/vcr_cassettes/data.yaml',
     filter_headers=['authorization'])
 def test_empty_response_sensors_from_poles(
         raritan_conf, test_exception, monkeypatch):
@@ -100,7 +100,7 @@ def test_empty_response_sensors_from_poles(
 
 
 @vcr.use_cassette(
-    'tests/fixtures/vcr_cassettes/interface_setup.yaml',
+    'tests/fixtures/vcr_cassettes/data.yaml',
     filter_headers=['authorization'])
 def test_empty_response_sensors_from_connectors(
         raritan_conf, test_exception, monkeypatch):
@@ -122,7 +122,7 @@ def test_empty_response_sensors_from_connectors(
 
 
 @vcr.use_cassette(
-    'tests/fixtures/vcr_cassettes/interface_setup.yaml',
+    'tests/fixtures/vcr_cassettes/data.yaml',
     filter_headers=['authorization'])
 def test_empty_response_read(raritan_conf, test_exception, monkeypatch):
     """EmptyResponse returned when reading from sensors"""

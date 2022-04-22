@@ -33,7 +33,7 @@ def test_pdu_post_init(raritan_conf):
 
 
 @vcr.use_cassette(
-    'tests/fixtures/vcr_cassettes/interface_setup.yaml',
+    'tests/fixtures/vcr_cassettes/data.yaml',
     filter_headers=['authorization'])
 def test_pdu_setup(raritan_conf):
     pdu = PDU(
@@ -59,7 +59,7 @@ def test_pdu_setup(raritan_conf):
 
 
 @vcr.use_cassette(
-    'tests/fixtures/vcr_cassettes/interface_setup.yaml',
+    'tests/fixtures/vcr_cassettes/data.yaml',
     filter_headers=['authorization'])
 def test_pdu_setup_connectors(raritan_conf):
     pdu = PDU(
@@ -80,7 +80,7 @@ def test_pdu_setup_connectors(raritan_conf):
 
 
 @vcr.use_cassette(
-    'tests/fixtures/vcr_cassettes/interface_setup.yaml',
+    'tests/fixtures/vcr_cassettes/data.yaml',
     filter_headers=['authorization'])
 def test_pdu_setup_poles(raritan_conf):
     pdu = PDU(
@@ -97,7 +97,7 @@ def test_pdu_setup_poles(raritan_conf):
 
 
 @vcr.use_cassette(
-    'tests/fixtures/vcr_cassettes/interface_setup.yaml',
+    'tests/fixtures/vcr_cassettes/data.yaml',
     filter_headers=['authorization'])
 def test_pdu_setup_sensors(raritan_conf):
     pdu = PDU(
@@ -117,7 +117,7 @@ def test_pdu_setup_sensors(raritan_conf):
 
 
 @vcr.use_cassette(
-    'tests/fixtures/vcr_cassettes/interface_read.yaml',
+    'tests/fixtures/vcr_cassettes/data.yaml',
     filter_headers=['authorization'])
 def test_pdu_read(raritan_conf):
     pdu = PDU(
@@ -137,7 +137,7 @@ def test_pdu_read(raritan_conf):
 
 @pytest.mark.filterwarnings('ignore::UserWarning')
 @vcr.use_cassette(
-    'tests/fixtures/vcr_cassettes/interface_setup.yaml',
+    'tests/fixtures/vcr_cassettes/data.yaml',
     filter_headers=['authorization'])
 def test_pdu_read_fail(raritan_conf):
     pdu = PDU(
