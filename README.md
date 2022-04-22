@@ -19,7 +19,7 @@ we do not have to bundle the Raritan PDU Python API with this project.
 
 ## Installation
 ```commandline
-git clone git@jugit.fz-juelich.de:inm7/infrastructure/prometheus_raritan_pdu_exporter.git
+git clone git@github.com:psyinfra/prometheus-raritan-pdu-exporter.git
 cd prometheus_raritan_pdu_exporter
 pip install .
 ```
