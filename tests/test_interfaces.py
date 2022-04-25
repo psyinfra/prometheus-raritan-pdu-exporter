@@ -203,7 +203,7 @@ def test_sensor(raritan_conf):
         rid='1', interface=SENSORS_COUNTERS[0], metric=1, unit=0,
         parent=connector)
     assert sensor.interface == 'counter'
-    assert sensor.name == f'{EXPORTER_PREFIX}_{SENSORS_TYPES[1]}'
+    assert sensor.name == f'{EXPORTER_PREFIX}_{SENSORS_TYPES[1]}_total'
 
     with pytest.raises(InterfaceError):
         Sensor(rid='1', interface='foo', metric=1, unit=2, parent=connector)

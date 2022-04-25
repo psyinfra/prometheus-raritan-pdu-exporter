@@ -348,17 +348,19 @@ class Sensor:
 
     def __post_init__(self, metric: int, unit: int):
         metric = SENSORS_TYPES[metric] if self.name is None else self.name
-        metric = self.camel_to_snake(metric)
+        metric = metric.lower()
         unit = SENSORS_UNITS[unit]
         name = f"{EXPORTER_PREFIX}_{metric}{'_'+unit if unit else ''}"
-        super().__setattr__('name', name)
 
         if self.interface in SENSORS_GAUGES:
             super().__setattr__('interface', 'gauge')
         elif self.interface in SENSORS_COUNTERS:
             super().__setattr__('interface', 'counter')
+            name += '_total'
         else:
             raise InterfaceError(self)
+
+        super().__setattr__('name', name)
 
         if metric == 'unspecified':
             logger.debug(f'Sensor \'{self.name}\' is of unspecified type')
