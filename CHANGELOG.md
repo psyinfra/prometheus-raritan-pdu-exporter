@@ -1,5 +1,17 @@
 # Change Log
 
+## v2.1.0
+
+Released on April 25th, 2022
+
+### Breaking Changes
+  * Change metric naming to raritanpdu_<metric>_<unit>{_total} where metric and unit words are no longer separated by underscores
+
+### Changes
+  * Adjust tests to match new naming scheme
+  * Add `_total` to counter metric names
+
+
 ## v2.0.1
 
 Released on April 21st, 2022
