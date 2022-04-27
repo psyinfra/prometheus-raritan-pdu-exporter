@@ -6,8 +6,8 @@ import urllib.parse
 
 from prometheus_client import start_http_server, REGISTRY
 
-from prometheus_raritan_pdu_exporter import DEFAULT_PORT
-from prometheus_raritan_pdu_exporter.exporter import RaritanExporter
+from . import DEFAULT_PORT
+from .exporter import RaritanExporter
 
 
 def parse_args():
@@ -97,7 +97,3 @@ def main():
             'Exporter shut down unexpectedly. Please contact your '
             'administrator.')
         exit(1)
-
-
-if __name__ == '__main__':
-    main()

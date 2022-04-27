@@ -1,5 +1,13 @@
 # Change Log
 
+## v2.1.1
+
+Released on April 27th, 2022
+
+### Changes
+  * Entry point changed from `python3 -m prometheus_raritan_pdu_exporter.py <args>` to `raritanpdu <args>`
+
+
 ## v2.1.0
 
 Released on April 25th, 2022

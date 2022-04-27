@@ -26,7 +26,7 @@ pip install .
 
 ## Usage for PDU collection
 
-    prometheus_raritan_pdu_exporter.py [-h] -c config [-w LISTEN_ADDRESS] [-l LOG_LEVEL [LOG_LEVEL ...]]
+    raritanpdu [-h] -c config [-w LISTEN_ADDRESS] [-l LOG_LEVEL [LOG_LEVEL ...]]
 
     optional arguments:
       -h, --help            show this help message and exit
@@ -42,8 +42,11 @@ pip install .
 ### Example
 
 ```commandline
-python3 prometheus_raritan_pdu_exporter.py --web.listen-address :9950
+raritanpdu --web.listen-address :9950
 ```
+
+The entry points `raritanpdu` and `prometheus_raritan_pdu_exporter` are 
+identical and can be used interchangeably.
 
 ### Debugging
 To enable debugging, set `-l debug` to log debug messages. Note that this will 

@@ -6,7 +6,7 @@ long_description = (here / "README.md").read_text(encoding="utf-8")
 
 setup(
     name="prometheus-raritan-pdu-exporter",
-    version="2.1.0",
+    version="2.1.1",
     description="Python-based Raritan PDU exporter for prometheus.io",
     long_description=long_description,
     long_description_content_type="text/markdown",
@@ -37,5 +37,11 @@ setup(
             "https://github.com/psyinfra/prometheus-raritan-pdu-exporter/issues",  # noqa: E501
         "Source":
             "https://github.com/psyinfra/prometheus-raritan-pdu-exporter",
-    }
+    },
+    entry_points={
+        'console_scripts': [
+            'prometheus_raritan_pdu_exporter=prometheus_raritan_pdu_exporter.main:main',  # noqa: E501
+            'raritanpdu=prometheus_raritan_pdu_exporter.main:main'
+        ],
+    },
 )
