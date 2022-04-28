@@ -20,13 +20,25 @@ REQUEST_TIME = Summary(
 
 class RaritanExporter:
     def __init__(self, config: str) -> None:
+        self.pdus = []
         logger.info(f'Loading configuration file \'{config}\'')
         with open(config) as json_file:
             data = json.load(json_file)
 
-        self.pdus = [PDU(
-            url=v['url'], user=v['user'], password=v['password'],
-            ssl=v['ssl'], name=k) for k, v in data.items()]
+        for k, v in data.items():
+            try:
+                url = v['url']
+                user = v['user']
+                password = v['password']
+                ssl = v['ssl']
+                name = k
+            except KeyError as exc:
+                raise KeyError(
+                    f'Error in configuration file: {exc} not found for {k}')
+
+            self.pdus.append(
+                PDU(url=url, user=user, password=password, ssl=ssl, name=name))
+
         asyncio.run(self._setup())
 
     async def _setup(self):
