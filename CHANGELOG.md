@@ -52,6 +52,7 @@ Released on April 19th, 2022
     * Add `ssl` key to PDU configuration file
       * `False` skips verification
       * `True` uses default verification
+  * Change `address` key in configuration file to `url`
   * Change metric naming scheme from `raritan_sensors_<metric>_in_<unit>` to `raritan_pdu_<metric>_<unit>`
   * Change default listen port from `9840` to `9950` to match the [allocated default port](https://github.com/prometheus/prometheus/wiki/Default-port-allocations) for the Raritan PDU Exporter
 
