@@ -16,17 +16,13 @@ def test_exception():
 
 
 def test_empty_response_connector_rids(
-        raritan_conf, test_exception, monkeypatch):
+        raritan_auth, test_exception, monkeypatch):
     """EmptyResponse returned during any of the setup steps"""
     async def mock_send(self):
         response = EmptyResponse(exception=test_exception())
         return response
 
-    pdu = PDU(
-        url=raritan_conf.url, user=raritan_conf.user,
-        password=raritan_conf.password, ssl=raritan_conf.ssl,
-        name=raritan_conf.name)
-
+    pdu = PDU(auth=raritan_auth[0])
     monkeypatch.setattr(Request, 'send', mock_send)
 
     with pytest.raises(test_exception):
@@ -37,17 +33,13 @@ def test_empty_response_connector_rids(
     'tests/fixtures/vcr_cassettes/data.yaml',
     filter_headers=['authorization'])
 def test_empty_response_connector_metadata(
-        raritan_conf, test_exception, monkeypatch):
+        raritan_auth, test_exception, monkeypatch):
     """EmptyResponse returned during any of the setup steps"""
     async def mock_send(self):
         response = EmptyResponse(exception=test_exception())
         return response
 
-    pdu = PDU(
-        url=raritan_conf.url, user=raritan_conf.user,
-        password=raritan_conf.password, ssl=raritan_conf.ssl,
-        name=raritan_conf.name)
-
+    pdu = PDU(auth=raritan_auth[0])
     connectors = asyncio.run(pdu._connector_rids())
     monkeypatch.setattr(Request, 'send', mock_send)
 
@@ -59,17 +51,13 @@ def test_empty_response_connector_metadata(
     'tests/fixtures/vcr_cassettes/data.yaml',
     filter_headers=['authorization'])
 def test_empty_response_connector_settings(
-        raritan_conf, test_exception, monkeypatch):
+        raritan_auth, test_exception, monkeypatch):
     """EmptyResponse returned during any of the setup steps"""
     async def mock_send(self):
         response = EmptyResponse(exception=test_exception())
         return response
 
-    pdu = PDU(
-        url=raritan_conf.url, user=raritan_conf.user,
-        password=raritan_conf.password, ssl=raritan_conf.ssl,
-        name=raritan_conf.name)
-
+    pdu = PDU(auth=raritan_auth[0])
     connectors = asyncio.run(pdu._connector_rids())
     connectors = asyncio.run(pdu._connector_metadata(connectors))
     monkeypatch.setattr(Request, 'send', mock_send)
@@ -82,17 +70,13 @@ def test_empty_response_connector_settings(
     'tests/fixtures/vcr_cassettes/data.yaml',
     filter_headers=['authorization'])
 def test_empty_response_sensors_from_poles(
-        raritan_conf, test_exception, monkeypatch):
+        raritan_auth, test_exception, monkeypatch):
     """EmptyResponse returned during any of the setup steps"""
     async def mock_send(self):
         response = EmptyResponse(exception=test_exception())
         return response
 
-    pdu = PDU(
-        url=raritan_conf.url, user=raritan_conf.user,
-        password=raritan_conf.password, ssl=raritan_conf.ssl,
-        name=raritan_conf.name)
-
+    pdu = PDU(auth=raritan_auth[0])
     monkeypatch.setattr(Request, 'send', mock_send)
 
     with pytest.raises(test_exception):
@@ -103,18 +87,14 @@ def test_empty_response_sensors_from_poles(
     'tests/fixtures/vcr_cassettes/data.yaml',
     filter_headers=['authorization'])
 def test_empty_response_sensors_from_connectors(
-        raritan_conf, test_exception, monkeypatch):
+        raritan_auth, test_exception, monkeypatch):
     """EmptyResponse returned during any of the setup steps"""
     async def mock_send(self):
         response = EmptyResponse(exception=test_exception())
         return response
 
-    pdu = PDU(
-        url=raritan_conf.url, user=raritan_conf.user,
-        password=raritan_conf.password, ssl=raritan_conf.ssl,
-        name=raritan_conf.name)
+    pdu = PDU(auth=raritan_auth[0])
     asyncio.run(pdu._connectors())
-
     monkeypatch.setattr(Request, 'send', mock_send)
 
     with pytest.raises(test_exception):
@@ -124,19 +104,14 @@ def test_empty_response_sensors_from_connectors(
 @vcr.use_cassette(
     'tests/fixtures/vcr_cassettes/data.yaml',
     filter_headers=['authorization'])
-def test_empty_response_read(raritan_conf, test_exception, monkeypatch):
+def test_empty_response_read(raritan_auth, test_exception, monkeypatch):
     """EmptyResponse returned when reading from sensors"""
     async def mock_send(self):
         response = EmptyResponse(exception=test_exception())
         return response
 
-    pdu = PDU(
-        url=raritan_conf.url, user=raritan_conf.user,
-        password=raritan_conf.password, ssl=raritan_conf.ssl,
-        name=raritan_conf.name)
+    pdu = PDU(auth=raritan_auth[0])
     asyncio.run(pdu.setup())
-
     monkeypatch.setattr(Request, 'send', mock_send)
-
     metrics = asyncio.run(pdu.read())
     assert len(metrics) == 0

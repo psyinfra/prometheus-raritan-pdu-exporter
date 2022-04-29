@@ -3,12 +3,12 @@
         "url": "https://address.to.pdu",
         "user": "username",
         "password": "password",
-        "ssl": false
+        "verify_ssl": false
     },
     "pdu2_name": {
         "url": "https://address.to.pdu",
         "user": "username",
         "password": "password",
-        "ssl": false
+        "verify_ssl": false
     }
 }

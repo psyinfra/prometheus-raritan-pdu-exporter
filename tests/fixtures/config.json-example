@@ -3,36 +3,36 @@
         "url": "https://pdublue.rack0.htc.inm7.de",
         "user": "admin",
         "password": "xxxxx",
-        "ssl": false
+        "verify_ssl": false
     },
     "pdured.rack0": {
         "url": "https://pdured.rack0.htc.inm7.de",
         "user": "admin",
         "password": "xxxxx",
-        "ssl": false
+        "verify_ssl": false
     },
     "pdublue.rack1": {
         "url": "https://pdublue.rack1.htc.inm7.de",
         "user": "admin",
         "password": "xxxxx",
-        "ssl": false
+        "verify_ssl": false
     },
     "pdured.rack1": {
         "url": "https://pdured.rack1.htc.inm7.de",
         "user": "admin",
         "password": "xxxxx",
-        "ssl": false
+        "verify_ssl": false
     },
     "pdublue.rack2": {
         "url": "https://pdublue.rack2.htc.inm7.de",
         "user": "admin",
         "password": "xxxxx",
-        "ssl": false
+        "verify_ssl": false
     },
     "pdured.rack2": {
         "url": "https://pdured.rack2.htc.inm7.de",
         "user": "admin",
         "password": "xxxxx",
-        "ssl": false
+        "verify_ssl": false
     }
 }

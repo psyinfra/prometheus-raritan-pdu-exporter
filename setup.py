@@ -6,7 +6,7 @@ long_description = (here / "README.md").read_text(encoding="utf-8")
 
 setup(
     name="prometheus-raritan-pdu-exporter",
-    version="2.1.1",
+    version="2.1.2",
     description="Python-based Raritan PDU exporter for prometheus.io",
     long_description=long_description,
     long_description_content_type="text/markdown",

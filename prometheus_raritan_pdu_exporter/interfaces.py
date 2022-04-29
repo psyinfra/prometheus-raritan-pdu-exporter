@@ -1,7 +1,6 @@
 from __future__ import annotations
 from dataclasses import dataclass, field, InitVar
 from typing import Optional, Union, List, Dict, Any
-from urllib.parse import urlparse, urlunparse
 import logging
 import re
 
@@ -26,37 +25,22 @@ class MetricMismatchError(Exception):
 
 @dataclass
 class PDU:
-    url: InitVar[str]
-    user: InitVar[str]
-    password: InitVar[str]
-    ssl: InitVar[Optional[bool]] = False
-    name: Optional[str] = None
+    auth: RaritanAuth = field(repr=False)
 
+    name: str = field(init=False)
     connectors: list[Connector] = field(
         default_factory=list, init=False, repr=False)
     poles: list[Pole] = field(default_factory=list, init=False, repr=False)
     sensors: list[Sensor] = field(default_factory=list, init=False, repr=False)
 
-    auth: RaritanAuth = field(init=False, repr=False)
     n_inlets: int = field(init=False, default=0)
     n_outlets: int = field(init=False, default=0)
     n_sensors: int = field(init=False, default=0)
     n_devices: int = field(init=False, default=0)
     n_poles: int = field(init=False, default=0)
 
-    def __post_init__(
-            self, url: str, user: str, password: str,
-            ssl: Optional[bool] = False):
-        url = urlparse(url)
-
-        if not url.scheme:
-            url._replace(scheme='http')
-
-        if self.name is None:
-            self.name = url.netloc
-
-        self.auth = RaritanAuth(
-            url=urlunparse(url), user=user, password=password, ssl=ssl)
+    def __post_init__(self):
+        super().__setattr__('name', self.auth.name)
 
     async def setup(self):
         await self._connectors()

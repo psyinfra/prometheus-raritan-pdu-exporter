@@ -115,24 +115,26 @@ def test_responses_multi_responses_containing_errors():
 
 def test_raritan_auth():
     auth = RaritanAuth(
-        url='https://127.0.0.1:9840', user='admin', password='xxxxx')
+        name='foo', url='https://127.0.0.1:9840', user='admin', password='xxx')
+    assert auth.name == 'foo'
     assert auth.url == 'https://127.0.0.1:9840'
     assert auth.user == 'admin'
-    assert auth.password == 'xxxxx'
-    assert not auth.ssl
+    assert auth.password == 'xxx'
+    assert not auth.verify_ssl
     assert auth.__dataclass_params__.frozen
 
     auth = RaritanAuth(
-        url='https://127.0.0.1:9840', user='admin', password='xxxxx', ssl=True)
-    assert auth.ssl is None
+        name='foo', url='https://127.0.0.1:9840', user='admin', password='xxx',
+        verify_ssl=True)
+    assert auth.verify_ssl is None
 
 
 def test_request_init():
     auth = RaritanAuth(
-        url='https://127.0.0.1:9840', user='admin', password='xxxxx')
-    request = Request(auth=auth, id='foo')
+        name='foo', url='https://127.0.0.1:9840', user='admin', password='xxx')
+    request = Request(auth=auth, id='bar')
     assert request.auth is auth
-    assert request.id == 'foo'
+    assert request.id == 'bar'
     assert isinstance(request.requests, list)
     assert not request.requests
 
@@ -143,7 +145,7 @@ def test_request_request():
 
 def test_request_add():
     auth = RaritanAuth(
-        url='https://127.0.0.1:9840', user='admin', password='xxxxx')
+        name='baz', url='https://127.0.0.1:9840', user='admin', password='xxx')
     request = Request(auth=auth, id='foo')
 
     expected_json = {'jsonrpc': '2.0', 'method': 'getFoo', 'id': 1}

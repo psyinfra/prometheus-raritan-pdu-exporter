@@ -1,6 +1,5 @@
 from typing import List
 import asyncio
-import json
 import random
 import string
 import time
@@ -10,6 +9,7 @@ from prometheus_client.core import GaugeMetricFamily, CounterMetricFamily
 
 from . import logger
 from .interfaces import PDU, MetricFamily
+from .jsonrpc import RaritanAuth
 
 
 # Measure collection time
@@ -19,26 +19,8 @@ REQUEST_TIME = Summary(
 
 
 class RaritanExporter:
-    def __init__(self, config: str) -> None:
-        self.pdus = []
-        logger.info(f'Loading configuration file \'{config}\'')
-        with open(config) as json_file:
-            data = json.load(json_file)
-
-        for k, v in data.items():
-            try:
-                url = v['url']
-                user = v['user']
-                password = v['password']
-                ssl = v['ssl']
-                name = k
-            except KeyError as exc:
-                raise KeyError(
-                    f'Error in configuration file: {exc} not found for {k}')
-
-            self.pdus.append(
-                PDU(url=url, user=user, password=password, ssl=ssl, name=name))
-
+    def __init__(self, config: List[RaritanAuth]) -> None:
+        self.pdus = [PDU(auth=auth) for auth in config]
         asyncio.run(self._setup())
 
     async def _setup(self):

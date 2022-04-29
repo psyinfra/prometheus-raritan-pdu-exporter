@@ -1,5 +1,6 @@
-#!/usr/bin/env python3
+from typing import List
 import argparse
+import json
 import logging
 import time
 import urllib.parse
@@ -8,6 +9,7 @@ from prometheus_client import start_http_server, REGISTRY
 
 from . import DEFAULT_PORT
 from .exporter import RaritanExporter
+from .jsonrpc import RaritanAuth
 
 
 def parse_args():
@@ -29,12 +31,11 @@ def parse_args():
     return parser.parse_args()
 
 
-def main():
-    args = parse_args()
+def set_log_level(log_level: list) -> logging.Logger:
     level_names = [
         logging.getLevelName(i) for i in range(1, 101)
         if not logging.getLevelName(i).startswith('Level')]
-    log_level = [log.upper() for log in args.log_level]
+    log_level = [log.upper() for log in log_level]
 
     if len(log_level) == 1:
         log_level = log_level[0].split(',')  # adjust for , list separation
@@ -63,18 +64,54 @@ def main():
             f'Unknown log-level: \'{internal_log_level}\' try using '
             f'{*level_names,}')
 
-    logger.info(f'Internal log level: {logging.getLevelName(logger.level)}')
-    logger.info(
-        f'External log level: {logging.getLevelName(logging.root.level)}')
+    return logger
 
-    listen_address = urllib.parse.urlsplit(f'//{args.listen_address}')
-    addr = listen_address.hostname if listen_address.hostname else '0.0.0.0'
-    port = listen_address.port if listen_address.port else DEFAULT_PORT
+
+def read_config(config: str) -> List[RaritanAuth]:
+    with open(config) as json_file:
+        data = json.load(json_file)
+
+    config_data = []
+    for k, v in data.items():
+        try:
+            url = v['url']
+            user = v['user']
+            password = v['password']
+            verify_ssl = v['verify_ssl']
+            name = k
+        except KeyError as exc:
+            raise KeyError(
+                f'Error in configuration file: {exc} not found for {k}')
+
+        config_data.append(RaritanAuth(
+            name=name, url=url, user=user, password=password,
+            verify_ssl=verify_ssl))
+
+    return config_data
+
+
+def main():
+    args = parse_args()
+
+    # Set up logging
+    logger = set_log_level(args.log_level)
+    internal_log_level = logging.getLevelName(logger.level)
+    external_log_level = logging.getLevelName(logging.root.level)
+    logger.info(f'Internal log level: {internal_log_level}')
+    logger.info(f'External log level: {external_log_level}')
 
     try:
-        REGISTRY.register(RaritanExporter(config=args.config))
+        # Read config
+        logger.info(f'Loading configuration file \'{args.config}\'')
+        config = read_config(args.config)
+
+        # Set up http server
+        listen_addr = urllib.parse.urlsplit(f'//{args.listen_address}')
+        addr = listen_addr.hostname if listen_addr.hostname else '0.0.0.0'
+        port = listen_addr.port if listen_addr.port else DEFAULT_PORT
+        REGISTRY.register(RaritanExporter(config=config))
         start_http_server(port, addr=addr)
-        logger.info('listening on %s' % listen_address.netloc)
+        logger.info('listening on %s' % listen_addr.netloc)
     except KeyboardInterrupt:
         logger.info('Interrupted by user')
         exit(0)

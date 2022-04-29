@@ -1,12 +1,11 @@
 from dataclasses import dataclass, field, InitVar
-from typing import Union, Optional, Dict, Any
+from typing import Union, Dict, Any
 from urllib.parse import urljoin
 from ssl import SSLCertVerificationError
-from hashlib import sha256
+from urllib.parse import urlparse, urlunparse
 
 from aiohttp import (
-    BasicAuth, ClientSession, ClientTimeout, TCPConnector, Fingerprint,
-    ServerTimeoutError)
+    BasicAuth, ClientSession, ClientTimeout, TCPConnector, ServerTimeoutError)
 from aiohttp.web import HTTPException
 
 from . import logger
@@ -82,27 +81,36 @@ class Responses(object):
 
 @dataclass(frozen=True)
 class RaritanAuth:
+    name: str
     url: str
     user: str = field(repr=False)
     password: str = field(repr=False)
-    ssl: Optional[Union[bool, None]] = field(default=False)
+    verify_ssl: bool = field(default=False)
+
+    def _strict_type_check(self):
+        for (name, field_type) in self.__annotations__.items():
+            if not isinstance(self.__dict__[name], field_type):
+                current_type = type(self.__dict__[name])
+                raise TypeError(
+                    f'{name} is of type `{current_type}` but should be of '
+                    f'type `{field_type}`')
 
     def __post_init__(self):
-        # default SSL check
-        if self.ssl is True:
-            super().__setattr__('ssl', None)
+        self._strict_type_check()
 
-        # SHA256 digest for certificate in DER-encoded binary
-        if isinstance(self.ssl, str):
-            try:
-                with open(self.ssl, 'rb') as f:
-                    digest = sha256(f.read()).digest()
-                super().__setattr__('ssl', Fingerprint(digest))
-            except Exception as exc:
-                logger.error(
-                    f'Failed to read SHA256 digest ({exc}), using default SSL '
-                    'check instead')
-                super().__setattr__('ssl', None)
+        if self.verify_ssl:
+            # None uses default ssl verification in aiohttp.TCPConnector
+            super().__setattr__('verify_ssl', None)
+
+        url = urlparse(self.url)
+
+        if not url.scheme:
+            url._replace(scheme='http')
+
+        if self.name is None:
+            super().__setattr__('name', url.netloc)
+
+        super().__setattr__('url', urlunparse(url))
 
 
 class Request:
@@ -134,12 +142,13 @@ class Request:
     async def send(self) -> Union[Responses, EmptyResponse]:
         auth = self.auth
         url = urljoin(auth.url, '/bulk')
+        ssl = None if auth.verify_ssl else False
 
         async with ClientSession(
                 timeout=ClientTimeout(total=10),
                 auth=BasicAuth(auth.user, auth.password, encoding='utf-8'),
                 headers={'Content-Type': 'application/json-rpc'},
-                connector=TCPConnector(ssl=auth.ssl)) as session:
+                connector=TCPConnector(ssl=ssl)) as session:
 
             try:
                 async with session.post(url, json=self.json) as response:

@@ -1,5 +1,18 @@
 # Change Log
 
+## v2.1.2
+
+Released on April 29th, 2022
+
+### Added
+  * Validate configuration parameters
+
+### Changes
+  * Change `ssl` in config to `verify_ssl` for clarity
+  * Simplify ssl verification
+
+
+
 ## v2.1.1
 
 Released on April 27th, 2022

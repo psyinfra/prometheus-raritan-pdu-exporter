@@ -1,5 +1,3 @@
-from dataclasses import dataclass, field
-from typing import Optional
 import json
 import os
 
@@ -7,16 +5,7 @@ import pytest
 import vcr
 
 from prometheus_raritan_pdu_exporter.exporter import RaritanExporter
-
-
-@dataclass
-class RaritanConfig:
-    file: str
-    name: str
-    url: str
-    user: str = field(repr=False)
-    password: str = field(repr=False)
-    ssl: Optional[bool] = field(default=False)
+from prometheus_raritan_pdu_exporter.jsonrpc import RaritanAuth
 
 
 def config():
@@ -28,15 +17,13 @@ def config():
     with open(raritan_config_file) as json_file:
         config = json.load(json_file)
 
-    key = list(config.keys())[0]
-    return RaritanConfig(
-        file=raritan_config_file, name=key, url=config[key]['url'],
-        user=config[key]['user'], password=config[key]['password'],
-        ssl=config[key]['ssl'])
+    return [RaritanAuth(
+        name=k, url=v['url'], user=v['user'], password=v['password'],
+        verify_ssl=v['verify_ssl']) for k, v in config.items()]
 
 
 @pytest.fixture(scope='module')
-def raritan_conf():
+def raritan_auth():
     return config()
 
 
@@ -45,6 +32,6 @@ def raritan_conf():
     filter_headers=['authorization'])
 def pytest_sessionstart(session):
     """Collect data sample from configured PDUs and store it as a cassette"""
-    raritan_conf = config()
-    exporter = RaritanExporter(config=raritan_conf.file)
+    auth = config()
+    exporter = RaritanExporter(config=auth)
     _ = exporter.read()

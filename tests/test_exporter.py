@@ -10,8 +10,8 @@ from prometheus_client.core import Metric as PromMetric
 @vcr.use_cassette(
     'tests/fixtures/vcr_cassettes/data.yaml',
     filter_headers=['authorization'])
-def test_raritan_exporter_init(raritan_conf):
-    exporter = RaritanExporter(config=raritan_conf.file)
+def test_raritan_exporter_init(raritan_auth):
+    exporter = RaritanExporter(config=raritan_auth)
 
     pdu_names = [
         'pdublue.rack0', 'pdublue.rack1', 'pdublue.rack2', 'pdured.rack0',
@@ -45,8 +45,8 @@ def test_raritan_exporter_init(raritan_conf):
 @vcr.use_cassette(
     'tests/fixtures/vcr_cassettes/data.yaml',
     filter_headers=['authorization'])
-def test_raritan_exporter_read(raritan_conf):
-    exporter = RaritanExporter(config=raritan_conf.file)
+def test_raritan_exporter_read(raritan_auth):
+    exporter = RaritanExporter(config=raritan_auth)
     readings = exporter.read()
 
     # readings depend on _used_ sensors, which is variable
@@ -73,8 +73,8 @@ def test_raritan_exporter_read(raritan_conf):
 @vcr.use_cassette(
     'tests/fixtures/vcr_cassettes/data.yaml',
     filter_headers=['authorization'])
-def test_raritan_exporter_collect(raritan_conf):
-    exporter = RaritanExporter(config=raritan_conf.file)
+def test_raritan_exporter_collect(raritan_auth):
+    exporter = RaritanExporter(config=raritan_auth)
     results = exporter.collect()
     pdu_names = [
         'pdublue.rack0', 'pdublue.rack1', 'pdublue.rack2', 'pdured.rack0',

@@ -15,31 +15,25 @@ from prometheus_raritan_pdu_exporter import (
     SENSORS_UNITS, SENSORS_DESCRIPTION)
 
 
-def test_pdu_post_init(raritan_conf):
-    pdu = PDU(
-        url=raritan_conf.url, user=raritan_conf.user,
-        password=raritan_conf.password, ssl=raritan_conf.ssl,
-        name=raritan_conf.name)
+def test_pdu_post_init(raritan_auth):
+    pdu = PDU(auth=raritan_auth[0])
 
     assert pdu.connectors == []
     assert pdu.poles == []
     assert pdu.sensors == []
-    assert pdu.name == raritan_conf.name
+    assert pdu.name == raritan_auth[0].name
     assert isinstance(pdu.auth, RaritanAuth)
     assert pdu.auth.url == 'https://pdublue.rack0.htc.inm7.de'
-    assert pdu.auth.user == raritan_conf.user
-    assert pdu.auth.password == raritan_conf.password
-    assert pdu.auth.ssl == raritan_conf.ssl
+    assert pdu.auth.user == raritan_auth[0].user
+    assert pdu.auth.password == raritan_auth[0].password
+    assert pdu.auth.verify_ssl == raritan_auth[0].verify_ssl
 
 
 @vcr.use_cassette(
     'tests/fixtures/vcr_cassettes/data.yaml',
     filter_headers=['authorization'])
-def test_pdu_setup(raritan_conf):
-    pdu = PDU(
-        url=raritan_conf.url, user=raritan_conf.user,
-        password=raritan_conf.password, ssl=raritan_conf.ssl,
-        name=raritan_conf.name)
+def test_pdu_setup(raritan_auth):
+    pdu = PDU(auth=raritan_auth[0])
     asyncio.run(pdu.setup())
 
     n_inlets = len([c for c in pdu.connectors if c.type == 'inlet'])
@@ -61,11 +55,8 @@ def test_pdu_setup(raritan_conf):
 @vcr.use_cassette(
     'tests/fixtures/vcr_cassettes/data.yaml',
     filter_headers=['authorization'])
-def test_pdu_setup_connectors(raritan_conf):
-    pdu = PDU(
-        url=raritan_conf.url, user=raritan_conf.user,
-        password=raritan_conf.password, ssl=raritan_conf.ssl,
-        name=raritan_conf.name)
+def test_pdu_setup_connectors(raritan_auth):
+    pdu = PDU(auth=raritan_auth[0])
     asyncio.run(pdu.setup())
 
     outlet_rid = '/tfwopaque/pdumodel.Outlet:2.1.5/outlet.0'
@@ -82,11 +73,8 @@ def test_pdu_setup_connectors(raritan_conf):
 @vcr.use_cassette(
     'tests/fixtures/vcr_cassettes/data.yaml',
     filter_headers=['authorization'])
-def test_pdu_setup_poles(raritan_conf):
-    pdu = PDU(
-        url=raritan_conf.url, user=raritan_conf.user,
-        password=raritan_conf.password, ssl=raritan_conf.ssl,
-        name=raritan_conf.name)
+def test_pdu_setup_poles(raritan_auth):
+    pdu = PDU(auth=raritan_auth[0])
     asyncio.run(pdu.setup())
 
     assert 1 in [p.id for p in pdu.poles]
@@ -99,11 +87,8 @@ def test_pdu_setup_poles(raritan_conf):
 @vcr.use_cassette(
     'tests/fixtures/vcr_cassettes/data.yaml',
     filter_headers=['authorization'])
-def test_pdu_setup_sensors(raritan_conf):
-    pdu = PDU(
-        url=raritan_conf.url, user=raritan_conf.user,
-        password=raritan_conf.password, ssl=raritan_conf.ssl,
-        name=raritan_conf.name)
+def test_pdu_setup_sensors(raritan_auth):
+    pdu = PDU(auth=raritan_auth[0])
     asyncio.run(pdu.setup())
 
     sensor_rid = '/tfwopaque/sensors.NumericSensor:4.0.3/I0Voltage'
@@ -119,11 +104,8 @@ def test_pdu_setup_sensors(raritan_conf):
 @vcr.use_cassette(
     'tests/fixtures/vcr_cassettes/data.yaml',
     filter_headers=['authorization'])
-def test_pdu_read(raritan_conf):
-    pdu = PDU(
-        url=raritan_conf.url, user=raritan_conf.user,
-        password=raritan_conf.password, ssl=raritan_conf.ssl,
-        name=raritan_conf.name)
+def test_pdu_read(raritan_auth):
+    pdu = PDU(auth=raritan_auth[0])
     asyncio.run(pdu.setup())
     metrics = asyncio.run(pdu.read())
 
@@ -139,11 +121,8 @@ def test_pdu_read(raritan_conf):
 @vcr.use_cassette(
     'tests/fixtures/vcr_cassettes/data.yaml',
     filter_headers=['authorization'])
-def test_pdu_read_fail(raritan_conf):
-    pdu = PDU(
-        url=raritan_conf.url, user=raritan_conf.user,
-        password=raritan_conf.password, ssl=raritan_conf.ssl,
-        name=raritan_conf.name)
+def test_pdu_read_fail(raritan_auth):
+    pdu = PDU(auth=raritan_auth[0])
     asyncio.run(pdu.setup())
 
     with patch(
@@ -153,11 +132,8 @@ def test_pdu_read_fail(raritan_conf):
         assert not metrics
 
 
-def test_connector(raritan_conf):
-    pdu = PDU(
-        url=raritan_conf.url, user=raritan_conf.user,
-        password=raritan_conf.password, ssl=raritan_conf.ssl,
-        name=raritan_conf.name)
+def test_connector(raritan_auth):
+    pdu = PDU(auth=raritan_auth[0])
 
     connector = Connector(pdu=pdu, rid='unique_id/1', type='inlet')
     assert connector.pdu == pdu
@@ -168,11 +144,8 @@ def test_connector(raritan_conf):
     assert connector.__dataclass_params__.frozen
 
 
-def test_pole(raritan_conf):
-    pdu = PDU(
-        url=raritan_conf.url, user=raritan_conf.user,
-        password=raritan_conf.password, ssl=raritan_conf.ssl,
-        name=raritan_conf.name)
+def test_pole(raritan_auth):
+    pdu = PDU(auth=raritan_auth[0])
 
     pole = Pole(pdu=pdu, id=1)
     assert pole.pdu == pdu
@@ -182,11 +155,8 @@ def test_pole(raritan_conf):
     assert pole.__dataclass_params__.frozen
 
 
-def test_sensor(raritan_conf):
-    pdu = PDU(
-        url=raritan_conf.url, user=raritan_conf.user,
-        password=raritan_conf.password, ssl=raritan_conf.ssl,
-        name=raritan_conf.name)
+def test_sensor(raritan_auth):
+    pdu = PDU(auth=raritan_auth[0])
     connector = Connector(pdu=pdu, rid='unique_id/1', type='inlet')
 
     sensor = Sensor(
@@ -221,11 +191,8 @@ def test_sensor_camel_to_snake():
         assert Sensor.camel_to_snake(arg) == expected
 
 
-def test_metric(raritan_conf):
-    pdu = PDU(
-        url=raritan_conf.url, user=raritan_conf.user,
-        password=raritan_conf.password, ssl=raritan_conf.ssl,
-        name=raritan_conf.name)
+def test_metric(raritan_auth):
+    pdu = PDU(auth=raritan_auth[0])
     connector = Connector(pdu=pdu, rid='unique_id/1', type='inlet')
     sensor = Sensor(
         rid='1', interface=SENSORS_GAUGES[0], metric=1, unit=2,
@@ -247,11 +214,8 @@ def test_metric(raritan_conf):
     assert not metric.is_numeric
 
 
-def test_metric_family(raritan_conf):
-    pdu = PDU(
-        url=raritan_conf.url, user=raritan_conf.user,
-        password=raritan_conf.password, ssl=raritan_conf.ssl,
-        name=raritan_conf.name)
+def test_metric_family(raritan_auth):
+    pdu = PDU(auth=raritan_auth[0])
     connector = Connector(pdu=pdu, rid='unique_id/1', type='inlet')
     sensor = Sensor(
         rid='1', interface=SENSORS_GAUGES[0], metric=1, unit=1,
