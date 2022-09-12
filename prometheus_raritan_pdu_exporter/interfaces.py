@@ -335,10 +335,11 @@ class Sensor:
         metric = metric.lower()
         unit = SENSORS_UNITS[unit]
         name = f"{EXPORTER_PREFIX}_{metric}{'_'+unit if unit else ''}"
+        interface = self.interface.split(':')[0]  # remove sensor version
 
-        if self.interface in SENSORS_GAUGES:
+        if interface in SENSORS_GAUGES:
             super().__setattr__('interface', 'gauge')
-        elif self.interface in SENSORS_COUNTERS:
+        elif interface in SENSORS_COUNTERS:
             super().__setattr__('interface', 'counter')
             name += '_total'
         else:

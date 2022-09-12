@@ -10,11 +10,11 @@ DEFAULT_PORT = 9950
 
 # All sensor interfaces that are to be recorded as prometheus gauges
 SENSORS_GAUGES = [
-    'sensors.NumericSensor:4.0.3',
-    'pdumodel.TypeBResidualCurrentNumericSensor:1.0.2']
+    'sensors.NumericSensor',
+    'pdumodel.TypeBResidualCurrentNumericSensor']
 
 # All sensor interfaces that are to be recorded as prometheus counters
-SENSORS_COUNTERS = ['sensors.AccumulatingNumericSensor:2.0.3']
+SENSORS_COUNTERS = ['sensors.AccumulatingNumericSensor']
 
 # Contains all the available sensor types. The order of this list is
 # important, as the list-id is referenced by the pdumodel metadata output
