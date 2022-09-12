@@ -1,5 +1,13 @@
 # Change Log
 
+## v2.1.3
+
+Released on September 12th, 2022
+
+### Changed
+  * Bug fix: Remove version string from sensor interface to prevent sensor updates from breaking gauge and counter recognition by interface type
+
+
 ## v2.1.2
 
 Released on April 29th, 2022
@@ -7,17 +15,16 @@ Released on April 29th, 2022
 ### Added
   * Validate configuration parameters
 
-### Changes
+### Changed
   * Change `ssl` in config to `verify_ssl` for clarity
   * Simplify ssl verification
-
 
 
 ## v2.1.1
 
 Released on April 27th, 2022
 
-### Changes
+### Changed
   * Entry point changed from `python3 -m prometheus_raritan_pdu_exporter.py <args>` to `raritanpdu <args>`
 
 
@@ -28,7 +35,7 @@ Released on April 25th, 2022
 ### Breaking Changes
   * Change metric naming to raritanpdu_<metric>_<unit>{_total} where metric and unit words are no longer separated by underscores
 
-### Changes
+### Changed
   * Adjust tests to match new naming scheme
   * Add `_total` to counter metric names
 
