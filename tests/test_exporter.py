@@ -33,7 +33,7 @@ def test_raritan_exporter_init(raritan_auth):
         n_devices = len([c for c in pdu.connectors if c.type == 'device'])
         assert n_inlets == pdu.n_inlets == 1
         assert n_outlets == pdu.n_outlets == 36
-        assert n_devices == pdu.n_devices == 32
+        assert n_devices == pdu.n_devices == 64
         assert len(pdu.connectors) == 69
         assert len(pdu.poles) == pdu.n_poles == 4
 
