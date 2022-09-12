@@ -44,7 +44,7 @@ def test_pdu_setup(raritan_auth):
     assert n_inlets == pdu.n_inlets == 1
     assert n_outlets == pdu.n_outlets == 36
     assert n_devices == pdu.n_devices == 64
-    assert len(pdu.connectors) == 69
+    assert len(pdu.connectors) == 101
     assert len(pdu.poles) == pdu.n_poles == 4
     assert len(pdu.sensors) == pdu.n_sensors > 0
 
@@ -62,10 +62,11 @@ def test_pdu_setup_connectors(raritan_auth):
 
     outlet_rid = '/tfwopaque/pdumodel.Outlet:*/outlet.0'
     assert any([fnmatch.fnmatch(c.rid, outlet_rid) for c in pdu.connectors])
-    outlet = [c for c in pdu.connectors if c.rid == outlet_rid][0]
+    outlet = [
+        c for c in pdu.connectors if fnmatch.fnmatch(c.rid, outlet_rid)][0]
 
     assert outlet.pdu == pdu
-    assert outlet.rid == outlet_rid
+    assert fnmatch.fnmatch(outlet.rid, outlet_rid)
     assert outlet.id == '1'
     assert outlet.name == '1'  # TODO: may be different, custom-labeled
     assert outlet.type == 'outlet'
@@ -92,15 +93,13 @@ def test_pdu_setup_sensors(raritan_auth):
     pdu = PDU(auth=raritan_auth[0])
     asyncio.run(pdu.setup())
 
-    sensor_rid = '/tfwopaque/sensors.NumericSensor:*/I0Voltage'
+    sensor_rid = '/tfwopaque/sensors.NumericSensor:*/I0P0Voltage'
     assert any([fnmatch.fnmatch(s.rid, sensor_rid) for s in pdu.sensors])
-    sensor = [s for s in pdu.sensors if s.rid == sensor_rid][0]
+    sensor = [s for s in pdu.sensors if fnmatch.fnmatch(s.rid, sensor_rid)][0]
 
-    assert sensor.rid == sensor_rid
+    assert fnmatch.fnmatch(sensor.rid, sensor_rid)
     assert sensor.interface == 'gauge'  # sensors.NumericSensor:4.0.3
     assert sensor.name == f'{EXPORTER_PREFIX}_voltage_volt'
-    assert fnmatch.fnmatch(
-        sensor.parent.rid, '/tfwopaque/pdumodel.Inlet:*/inlet.0')
 
 
 @vcr.use_cassette(
@@ -112,9 +111,10 @@ def test_pdu_read(raritan_auth):
     metrics = asyncio.run(pdu.read())
 
     assert all(isinstance(m, Metric) for m in metrics)
-    sensor_rid = '/tfwopaque/sensors.NumericSensor:*/I0Voltage'
+    sensor_rid = '/tfwopaque/sensors.NumericSensor:*/I0P0Voltage'
     assert any([fnmatch.fnmatch(m.sensor_rid, sensor_rid) for m in metrics])
-    metric = [m for m in metrics if m.sensor_rid == sensor_rid][0]
+    metric = [
+        m for m in metrics if fnmatch.fnmatch(m.sensor_rid, sensor_rid)][0]
     assert metric.value is not None
     assert metric.timestamp is not None
 

@@ -34,7 +34,7 @@ def test_raritan_exporter_init(raritan_auth):
         assert n_inlets == pdu.n_inlets == 1
         assert n_outlets == pdu.n_outlets == 36
         assert n_devices == pdu.n_devices == 64
-        assert len(pdu.connectors) == 69
+        assert len(pdu.connectors) == 101
         assert len(pdu.poles) == pdu.n_poles == 4
 
         # pdu.sensors only contains _used_ sensors
