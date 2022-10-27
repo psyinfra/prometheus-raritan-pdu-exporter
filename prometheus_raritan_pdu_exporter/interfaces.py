@@ -119,6 +119,7 @@ class PDU:
         result = await request.send()
         if isinstance(result, EmptyResponse):
             # EmptyResponses are not acceptable during setup
+            logger.debug('EmptyResponse in _connector_rids during setup')
             raise result.exception
 
         connectors = [
@@ -144,6 +145,7 @@ class PDU:
         result = await request.send()
         if isinstance(result, EmptyResponse):
             # EmptyResponses are not acceptable during setup
+            logger.debug('EmptyResponse in _connector_metadata during setup')
             raise result.exception
 
         for resp in result.responses:
@@ -168,6 +170,7 @@ class PDU:
         result = await request.send()
         if isinstance(result, EmptyResponse):
             # EmptyResponses are not acceptable during setup
+            logger.debug('EmptyResponse in _connector_settings during setup')
             raise result.exception
 
         for resp in result.responses:
@@ -194,6 +197,7 @@ class PDU:
         result = await request.send()
         if isinstance(result, EmptyResponse):
             # EmptyResponses are not acceptable during setup
+            logger.debug('EmptyResponse in _sensors_from_poles during setup')
             raise result.exception
 
         for resp in result.responses:
@@ -230,6 +234,8 @@ class PDU:
         result = await request.send()
         if isinstance(result, EmptyResponse):
             # EmptyResponses are not acceptable during setup
+            logger.debug(
+                'EmptyResponse in _sensors_from_connectors during setup')
             raise result.exception
 
         for resp in result.responses:
@@ -277,6 +283,7 @@ class PDU:
         result = await request.send()
         if isinstance(result, EmptyResponse):
             # EmptyResponses are not acceptable during setup
+            logger.debug('EmptyResponse in _sensor_metadata during setup')
             raise result.exception
 
         for resp in result.responses:
