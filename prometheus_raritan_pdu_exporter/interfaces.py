@@ -119,7 +119,6 @@ class PDU:
         result = await request.send()
         if isinstance(result, EmptyResponse):
             # EmptyResponses are not acceptable during setup
-            logger.debug('EmptyResponse in _connector_rids during setup')
             raise result.exception
 
         connectors = [
@@ -145,7 +144,6 @@ class PDU:
         result = await request.send()
         if isinstance(result, EmptyResponse):
             # EmptyResponses are not acceptable during setup
-            logger.debug('EmptyResponse in _connector_metadata during setup')
             raise result.exception
 
         for resp in result.responses:
@@ -170,7 +168,6 @@ class PDU:
         result = await request.send()
         if isinstance(result, EmptyResponse):
             # EmptyResponses are not acceptable during setup
-            logger.debug('EmptyResponse in _connector_settings during setup')
             raise result.exception
 
         for resp in result.responses:
@@ -197,7 +194,6 @@ class PDU:
         result = await request.send()
         if isinstance(result, EmptyResponse):
             # EmptyResponses are not acceptable during setup
-            logger.debug('EmptyResponse in _sensors_from_poles during setup')
             raise result.exception
 
         for resp in result.responses:
@@ -234,8 +230,6 @@ class PDU:
         result = await request.send()
         if isinstance(result, EmptyResponse):
             # EmptyResponses are not acceptable during setup
-            logger.debug(
-                'EmptyResponse in _sensors_from_connectors during setup')
             raise result.exception
 
         for resp in result.responses:
@@ -245,7 +239,8 @@ class PDU:
                     continue
 
                 ret = resp.ret.get('value', {}).get('device', None)
-                if ret['type'] not in [*SENSORS_GAUGES, *SENSORS_COUNTERS]:
+                base_type = ret.get('type', '').split(':')[0]
+                if base_type not in [*SENSORS_GAUGES, *SENSORS_COUNTERS]:
                     # ignore state sensors
                     continue
 
@@ -257,7 +252,8 @@ class PDU:
                     if ret is None:
                         continue
 
-                    if ret['type'] not in [*SENSORS_GAUGES, *SENSORS_COUNTERS]:
+                    base_type = ret.get('type', '').split(':')[0]
+                    if base_type not in [*SENSORS_GAUGES, *SENSORS_COUNTERS]:
                         # ignore state sensors
                         continue
 
@@ -283,7 +279,6 @@ class PDU:
         result = await request.send()
         if isinstance(result, EmptyResponse):
             # EmptyResponses are not acceptable during setup
-            logger.debug('EmptyResponse in _sensor_metadata during setup')
             raise result.exception
 
         for resp in result.responses:
