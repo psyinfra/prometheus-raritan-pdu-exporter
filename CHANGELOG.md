@@ -1,5 +1,18 @@
 # Change Log
 
+## v2.1.5
+
+### Changed
+  * Remove (and warn about) unreachable PDUs during start-up instead of raising an error
+
+## v2.1.4
+
+### Added
+  * Add debug responses for EmptyResponse during setup
+
+### Changed
+  * Bug fix: Discard sensor versions when checking sensor type
+
 ## v2.1.3
 
 Released on September 12th, 2022

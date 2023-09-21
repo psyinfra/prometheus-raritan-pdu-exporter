@@ -26,6 +26,17 @@ class RaritanExporter:
     async def _setup(self):
         await asyncio.gather(*[pdu.setup() for pdu in self.pdus])
 
+        pdus = []
+        for pdu in self.pdus:
+            if len(pdu.connectors) + len(pdu.sensors) + len(pdu.poles) == 0:
+                logger.warning(
+                    f'Removed {pdu.name} from collection (meta-data retrieval '
+                    f'failed)')
+            else:
+                pdus.append(pdu)
+
+        self.pdus = pdus
+
     async def _read(self, collect_id: str = '-'):
         return await asyncio.gather(
             *[pdu.read(collect_id=collect_id) for pdu in self.pdus])

@@ -1,6 +1,7 @@
 from __future__ import annotations
 from dataclasses import dataclass, field, InitVar
 from typing import Optional, Union, List, Dict, Any
+from aiohttp.client_exceptions import ClientConnectorError
 import logging
 import re
 
@@ -43,17 +44,23 @@ class PDU:
         super().__setattr__('name', self.auth.name)
 
     async def setup(self):
-        await self._connectors()
-        await self._sensors()
+        try:
+            await self._connectors()
+            await self._sensors()
 
-        self.n_poles = len(self.poles)
-        self.n_sensors = len(self.sensors)
-        self.n_inlets = len([c for c in self.connectors if c.type == 'inlet'])
-        self.n_outlets = len(
-            [c for c in self.connectors if c.type == 'outlet'])
-        self.n_devices = len(
-            [c for c in self.connectors if c.type == 'device'])
-        logger.info(self)
+            self.n_poles = len(self.poles)
+            self.n_sensors = len(self.sensors)
+            self.n_inlets = len(
+                [c for c in self.connectors if c.type == 'inlet'])
+            self.n_outlets = len(
+                [c for c in self.connectors if c.type == 'outlet'])
+            self.n_devices = len(
+                [c for c in self.connectors if c.type == 'device'])
+            logger.info(self)
+        except ClientConnectorError as e:
+            # Ignore PDUs that fail to connect
+            logger.warning(e)
+            return
 
     async def read(self, collect_id: str = '-') -> list[Metric]:
         """Request sensor readings"""
