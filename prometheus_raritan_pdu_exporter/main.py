@@ -4,8 +4,9 @@ import json
 import logging
 import time
 import urllib.parse
+from wsgiref.simple_server import make_server
 
-from prometheus_client import start_http_server, REGISTRY
+from prometheus_client import MetricsHandler, make_wsgi_app, REGISTRY
 
 from . import DEFAULT_PORT
 from .exporter import RaritanExporter
@@ -90,6 +91,17 @@ def read_config(config: str) -> List[RaritanAuth]:
     return config_data
 
 
+class HealthcheckHandler(MetricsHandler):
+    def do_GET(self):
+        logging.debug(self.path)
+        if self.path == '/healthcheck':
+            self.send_response(200)
+            self.end_headers()
+            self.wfile.write(b'Server is running')
+        else:
+            super().do_GET()
+
+
 def main():
     args = parse_args()
 
@@ -109,9 +121,16 @@ def main():
         listen_addr = urllib.parse.urlsplit(f'//{args.listen_address}')
         addr = listen_addr.hostname if listen_addr.hostname else '0.0.0.0'
         port = listen_addr.port if listen_addr.port else DEFAULT_PORT
-        REGISTRY.register(RaritanExporter(config=config))
-        start_http_server(port, addr=addr)
         logger.info('listening on %s' % listen_addr.netloc)
+        REGISTRY.register(RaritanExporter(config=config))
+        prometheus_application = make_wsgi_app()
+        httpd = make_server(
+            addr,
+            port,
+            prometheus_application,
+            handler_class=HealthcheckHandler
+        )
+        httpd.serve_forever()
     except KeyboardInterrupt:
         logger.info('Interrupted by user')
         exit(0)

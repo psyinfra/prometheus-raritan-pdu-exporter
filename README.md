@@ -48,6 +48,18 @@ raritanpdu --web.listen-address :9950
 The entry points `raritanpdu` and `prometheus_raritan_pdu_exporter` are 
 identical and can be used interchangeably.
 
+### Health checks
+
+For every HTTP endpoint other than `/healthcheck`, a collection of metrics from
+all of the PDUs in the configuration file will be performed and Prometheus
+style metrics will be returned.
+
+The `/healthcheck` endpoint will skip a collection of metrics from the PDUs and
+instead immediately return a 200 response with the text "Server is running".
+This `/healthcheck` endpoint can be useful when running in Kubernetes or other
+platforms to provide a healthcheck that the HTTP server is still successfully
+running and isn't hanging.
+
 ### Debugging
 To enable debugging, set `-l debug` to log debug messages. Note that this will 
 provide a lot of additional information and is therefore not a recommended 
