@@ -1,3 +1,9 @@
+# Migrated to Codeberg
+
+This project is no longer developed on GitHub and has been migrated to Codeberg:
+
+https://codeberg.org/psyinfra/prometheus-raritan-pdu-exporter
+
 ![Maintainer](https://img.shields.io/badge/maintainer-nhjjr-blue)
 ![GitHub](https://img.shields.io/github/license/psyinfra/prometheus-raritan-pdu-exporter)
 ![Build Status](https://github.com/psyinfra/prometheus-raritan-pdu-exporter/actions/workflows/tests.yml/badge.svg)
